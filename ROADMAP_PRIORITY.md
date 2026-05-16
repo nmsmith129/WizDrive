@@ -6,8 +6,8 @@ This checklist orders the features from `ROADMAP.md` by the sequence they can be
 
 - [x] Map data structure (grid-based representation)
 - [x] Map file format (`.lvlmap` support)
-- [ ] Map validation and error handling
-- [ ] Multiple map/level support
+- [x] Map validation and error handling
+- [x] Multiple map/level support
 - [ ] Dynamic object placement on maps
 - [ ] Player class with position tracking
 - [ ] Player rotation system (facing direction)
