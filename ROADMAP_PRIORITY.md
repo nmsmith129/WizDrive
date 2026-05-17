@@ -9,13 +9,17 @@ This checklist orders the features from `ROADMAP.md` by the sequence they can be
 - [x] Map validation and error handling
 - [x] Multiple map/level support
 - [ ] Dynamic object placement on maps
+- [ ] Stairs/portals for level transitions
+
 - [ ] Player class with position tracking
 - [ ] Player rotation system (facing direction)
 - [ ] Movement validation (collision detection with walls)
+
 - [ ] Basic 3D perspective drawing system
 - [ ] Wall rendering at various distances
 - [ ] Texture mapping for walls
 - [ ] UI overlay for HUD
+
 - [ ] MazeObject class for enemies
 - [ ] Enemy placement on maps
 - [ ] Enemy detection in view
@@ -24,11 +28,13 @@ This checklist orders the features from `ROADMAP.md` by the sequence they can be
 - [ ] Damage calculation and application
 - [ ] Enemy death handling and removal
 - [ ] Combat animations
+
 - [ ] Item placement on maps (chests, torches)
 - [ ] Item pickup mechanics
 - [ ] Item use/equip system
 - [ ] Equipment slots (weapon, armor, etc.)
 - [ ] Player inventory system
+
 - [ ] Player attributes (health, mana, experience, level)
 - [ ] Health/Hit Points (HP)
 - [ ] Mana/Spell Points (MP)
@@ -36,28 +42,32 @@ This checklist orders the features from `ROADMAP.md` by the sequence they can be
 - [ ] Level system
 - [ ] Attribute system (Strength, Intelligence, Dexterity, Constitution, Wisdom, Charisma)
 - [ ] Skill system
+
 - [ ] Item effects and properties
 - [ ] Character creation/customization
+- [ ] Level progression system
+- [ ] Level-specific enemy types
+- [ ] Level-specific treasure
+- [ ] Difficulty scaling per level
 - [ ] Enemy health/stats system
 - [ ] Multiple enemy types
+
 - [ ] Enemy AI (pathfinding, aggression)
 - [ ] Enemy visual representation in first-person view
+
 - [ ] Spell list/grimoire
 - [ ] Spell casting mechanics
 - [ ] Mana consumption
 - [ ] Spell effects (damage, healing, buffs, debuffs)
 - [ ] Spell range and targeting
 - [ ] Spell animations
+
 - [ ] Inventory UI display
 - [ ] Equipment system (weapon, armor, accessories)
 - [ ] Item stats and bonuses
 - [ ] Equipment weight/carrying capacity
 - [ ] Item management (drop, sell, trade)
-- [ ] Level progression system
-- [ ] Stairs/portals for level transitions
-- [ ] Level-specific enemy types
-- [ ] Level-specific treasure
-- [ ] Difficulty scaling per level
+
 - [ ] Traps and hazards
 - [ ] Doors and locked areas
 - [ ] Hidden walls/secret passages
@@ -69,11 +79,13 @@ This checklist orders the features from `ROADMAP.md` by the sequence they can be
 - [ ] Lever/switch activation
 - [ ] Environmental damage (lava, poison)
 - [ ] Weather/atmosphere effects
+
 - [ ] Start new game
 - [ ] Load game
 - [ ] Settings
 - [ ] Credits
 - [ ] Exit game
+
 - [ ] Character stats display (HP, MP, level)
 - [ ] Minimap
 - [ ] Compass/direction indicator

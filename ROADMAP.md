@@ -16,9 +16,9 @@ A first-person dungeon crawler game inspired by Wizardry, built with Python and 
 
 ### Map System
 - [x] Map data structure (grid-based representation)
-- [ ] Map file format (`.lvlmap` support)
-- [ ] Map validation and error handling
-- [ ] Multiple map/level support
+- [x] Map file format (`.dngn` support)
+- [x] Map validation and error handling
+- [x] Multiple map/level support
 - [ ] Dynamic object placement on maps
 
 ### First-Person View Rendering

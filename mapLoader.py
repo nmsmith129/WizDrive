@@ -34,6 +34,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import List, Tuple
 
+debug = False  # set to True to enable diagnostic output
+
 FACING_MAP = {
     "n": "north",
     "north": "north",
@@ -50,6 +52,8 @@ FloorData = tuple[List[List[int]], Tuple[int, int], str]
 
 
 def parseRow(rowText: str, size: int) -> List[int]:
+    if debug:
+        print(f"[DEBUG] parseRow: rowText={rowText!r}, size={size}")
     values = [token for token in rowText.strip().split() if token != ""]
     if len(values) != size:
         raise ValueError(f"Expected {size} values in row, got {len(values)}: {rowText!r}")
@@ -59,10 +63,14 @@ def parseRow(rowText: str, size: int) -> List[int]:
         if token not in {"0", "1"}:
             raise ValueError(f"Map row values must be 0 or 1: {token!r}")
         row.append(int(token))
+    if debug:
+        print(f"[DEBUG] parseRow -> {row}")
     return row
 
 
 def parsePlayerLine(line: str, mapSize: int) -> Tuple[int, int]:
+    if debug:
+        print(f"[DEBUG] parsePlayerLine: line={line!r}, mapSize={mapSize}")
     tokens = [token for token in line.strip().split() if token != ""]
     if len(tokens) != 2:
         raise ValueError(f"Player position line must contain exactly two numbers: {line!r}")
@@ -76,20 +84,29 @@ def parsePlayerLine(line: str, mapSize: int) -> Tuple[int, int]:
     if not (0 <= x < mapSize and 0 <= y < mapSize):
         raise ValueError(f"Player coordinates out of bounds: ({x}, {y}) for map size {mapSize}")
 
+    if debug:
+        print(f"[DEBUG] parsePlayerLine -> ({x}, {y})")
     return x, y
 
 
 def parseFacingLine(line: str) -> str:
+    if debug:
+        print(f"[DEBUG] parseFacingLine: line={line!r}")
     facingToken = line.strip().lower()
     if facingToken not in FACING_MAP:
         raise ValueError(
             f"Facing must be one of N, E, S, W or north/east/south/west: {line!r}"
         )
-    return FACING_MAP[facingToken]
+    result = FACING_MAP[facingToken]
+    if debug:
+        print(f"[DEBUG] parseFacingLine -> {result!r}")
+    return result
 
 
 def _splitFloorBlocks(lines: list[str]) -> list[list[str]]:
     """Split lines into floor blocks using blank lines as separators."""
+    if debug:
+        print(f"[DEBUG] _splitFloorBlocks: {len(lines)} input lines")
     blocks: list[list[str]] = []
     current: list[str] = []
     for line in lines:
@@ -101,11 +118,15 @@ def _splitFloorBlocks(lines: list[str]) -> list[list[str]]:
             current.append(line)
     if current:
         blocks.append(current)
+    if debug:
+        print(f"[DEBUG] _splitFloorBlocks -> {len(blocks)} block(s), sizes={[len(b) for b in blocks]}")
     return blocks
 
 
 def _parseFloorBlock(lines: list[str]) -> FloorData:
     """Parse one floor block (size, rows, player, facing) and return its data."""
+    if debug:
+        print(f"[DEBUG] _parseFloorBlock: {len(lines)} lines, first={repr(lines[0]) if lines else 'N/A'}")
     if not lines:
         raise ValueError("Empty floor block")
 
@@ -117,6 +138,9 @@ def _parseFloorBlock(lines: list[str]) -> FloorData:
     if size <= 0:
         raise ValueError("Floor size must be a positive integer")
 
+    if debug:
+        print(f"[DEBUG] _parseFloorBlock: size={size}, expecting {1 + size + 2} lines, got {len(lines)}")
+
     expectedLines = 1 + size + 2
     if len(lines) != expectedLines:
         raise ValueError(
@@ -126,16 +150,31 @@ def _parseFloorBlock(lines: list[str]) -> FloorData:
 
     rawRows = [parseRow(lines[i + 1], size) for i in range(size)]
     grid = rawRows[::-1]
+    if debug:
+        print(f"[DEBUG] _parseFloorBlock: rawRows (top-to-bottom as in file):")
+        for i, row in enumerate(rawRows):
+            print(f"  file row {i}: {row}")
+        print(f"[DEBUG] _parseFloorBlock: grid after reversal (y=0 at bottom):")
+        for y, row in enumerate(grid):
+            print(f"  y={y}: {row}")
     playerX, playerY = parsePlayerLine(lines[1 + size], size)
     facing = parseFacingLine(lines[2 + size])
 
     if grid[playerY][playerX] != 0:
         raise ValueError(f"Player start ({playerX}, {playerY}) is on a blocked tile")
 
+    if debug:
+        print(f"[DEBUG] _parseFloorBlock -> {size}x{size} grid, player=({playerX},{playerY}), facing={facing!r}")
+        print(f"[DEBUG] _parseFloorBlock: grid with player marked (P):")
+        for y, row in enumerate(grid):
+            displayed = [("P" if (xi == playerX and y == playerY) else str(v)) for xi, v in enumerate(row)]
+            print(f"  y={y}: [{', '.join(displayed)}]")
     return grid, (playerX, playerY), facing
 
 
 def _parseMapLines(rawLines: list[str], source: str) -> tuple[str, int, list[FloorData]]:
+    if debug:
+        print(f"[DEBUG] _parseMapLines: source={source!r}, {len(rawLines)} raw lines")
     nonEmpty = [l for l in rawLines if l.strip() != ""]
     if len(nonEmpty) < 2:
         raise ValueError(f"'{source}' is too short: missing dungeon name or floor count")
@@ -149,6 +188,9 @@ def _parseMapLines(rawLines: list[str], source: str) -> tuple[str, int, list[Flo
 
     if numFloors <= 0:
         raise ValueError("Number of floors must be a positive integer")
+
+    if debug:
+        print(f"[DEBUG] _parseMapLines: name={name!r}, numFloors={numFloors}")
 
     # Find the index in rawLines immediately after the second non-empty line.
     headerCount = 0
@@ -172,11 +214,15 @@ def _parseMapLines(rawLines: list[str], source: str) -> tuple[str, int, list[Flo
 
     floors: list[FloorData] = []
     for i, block in enumerate(floorBlocks):
+        if debug:
+            print(f"[DEBUG] _parseMapLines: parsing floor block {i + 1}/{len(floorBlocks)}")
         try:
             floors.append(_parseFloorBlock(block))
         except ValueError as exc:
             raise ValueError(f"Floor {i + 1}: {exc}") from exc
 
+    if debug:
+        print(f"[DEBUG] _parseMapLines -> name={name!r}, numFloors={numFloors}, {len(floors)} floor(s) loaded")
     return name, numFloors, floors
 
 
@@ -189,31 +235,56 @@ def loadMapFile(path: str | Path) -> tuple[str, int, list[FloorData]]:
         floors: list of (grid, playerPosition, facing) for each floor defined.
                 grid[y][x] is the tile at (x, y) with y=0 at the bottom.
     """
+    if debug:
+        print(f"[DEBUG] loadMapFile: path={str(path)!r}")
     pathObj = Path(path)
+    if pathObj.suffix != ".dngn":
+        raise ValueError(f"Map file must have a .dngn extension, got: {pathObj.name!r}")
     rawLines = [line.rstrip() for line in pathObj.read_text(encoding="utf-8").splitlines()]
-    return _parseMapLines(rawLines, source=str(pathObj))
+    if debug:
+        print(f"[DEBUG] loadMapFile: read {len(rawLines)} lines from {str(pathObj)!r}")
+    result = _parseMapLines(rawLines, source=str(pathObj))
+    if debug:
+        print(f"[DEBUG] loadMapFile -> dungeon={result[0]!r}, {result[1]} floor(s) declared, {len(result[2])} loaded")
+    return result
 
 
 def loadMapText(text: str) -> tuple[str, int, list[FloorData]]:
     """Load dungeon data from a string using the same format as loadMapFile."""
+    if debug:
+        print(f"[DEBUG] loadMapText: {len(text)} chars, {len(text.splitlines())} lines")
     rawLines = [line.rstrip() for line in text.splitlines()]
-    return _parseMapLines(rawLines, source="<text>")
+    result = _parseMapLines(rawLines, source="<text>")
+    if debug:
+        print(f"[DEBUG] loadMapText -> dungeon={result[0]!r}, {result[1]} floor(s) declared, {len(result[2])} loaded")
+    return result
 
 
 def _validateFloorBlock(lines: list[str]) -> list[str]:
     """Validate one floor block and return a list of error strings (empty if valid)."""
+    if debug:
+        print(f"[DEBUG] _validateFloorBlock: {len(lines)} lines")
     errors: list[str] = []
 
     if not lines:
+        if debug:
+            print("[DEBUG] _validateFloorBlock -> empty block error")
         return ["Empty floor block"]
 
     try:
         size = int(lines[0].strip())
     except ValueError:
+        if debug:
+            print(f"[DEBUG] _validateFloorBlock -> bad size line: {lines[0]!r}")
         return [f"Size line must be an integer, got: {lines[0]!r}"]
 
     if size <= 0:
+        if debug:
+            print(f"[DEBUG] _validateFloorBlock -> non-positive size: {size}")
         return ["Size must be a positive integer"]
+
+    if debug:
+        print(f"[DEBUG] _validateFloorBlock: size={size}, expecting {1 + size + 2} lines, got {len(lines)}")
 
     expectedLines = 1 + size + 2
     if len(lines) != expectedLines:
@@ -230,6 +301,13 @@ def _validateFloorBlock(lines: list[str]) -> list[str]:
             errors.append(f"Row {i + 1}: {exc}")
 
     grid: list[list[int]] | None = parsedRows[::-1] if len(parsedRows) == size else None
+    if debug:
+        if grid is not None:
+            print(f"[DEBUG] _validateFloorBlock: grid after reversal (y=0 at bottom):")
+            for y, row in enumerate(grid):
+                print(f"  y={y}: {row}")
+        else:
+            print(f"[DEBUG] _validateFloorBlock: grid incomplete ({len(parsedRows)}/{size} rows parsed)")
 
     playerPos: tuple[int, int] | None = None
     if len(lines) > 1 + size:
@@ -249,6 +327,8 @@ def _validateFloorBlock(lines: list[str]) -> list[str]:
         if grid[py][px] != 0:
             errors.append(f"Player start ({px}, {py}) is on a blocked tile")
 
+    if debug:
+        print(f"[DEBUG] _validateFloorBlock -> {len(errors)} error(s): {errors}")
     return errors
 
 
@@ -259,15 +339,24 @@ def validateMapFile(path: str | Path) -> tuple[bool, list[str]]:
         (is_valid, errors): is_valid is True when no errors were found;
                             errors is a list of human-readable problem descriptions.
     """
+    if debug:
+        print(f"[DEBUG] validateMapFile: path={str(path)!r}")
     errors: list[str] = []
     pathObj = Path(path)
 
     try:
         rawLines = [line.rstrip() for line in pathObj.read_text(encoding="utf-8").splitlines()]
     except FileNotFoundError:
+        if debug:
+            print(f"[DEBUG] validateMapFile -> file not found: {pathObj}")
         return False, [f"File not found: {pathObj}"]
     except OSError as exc:
+        if debug:
+            print(f"[DEBUG] validateMapFile -> OS error: {exc}")
         return False, [f"Could not read file: {exc}"]
+
+    if debug:
+        print(f"[DEBUG] validateMapFile: read {len(rawLines)} lines")
 
     nonEmpty = [l for l in rawLines if l.strip() != ""]
 
@@ -283,6 +372,9 @@ def validateMapFile(path: str | Path) -> tuple[bool, list[str]]:
     except ValueError:
         errors.append(f"Second line must be the floor count integer, got: {nonEmpty[1]!r}")
 
+    if debug:
+        print(f"[DEBUG] validateMapFile: name={nonEmpty[0].strip()!r}, numFloors={numFloors}")
+
     headerCount = 0
     afterHeaderStart = len(rawLines)
     for i, line in enumerate(rawLines):
@@ -296,6 +388,8 @@ def validateMapFile(path: str | Path) -> tuple[bool, list[str]]:
 
     if not floorBlocks:
         errors.append("No floor data found")
+        if debug:
+            print("[DEBUG] validateMapFile -> no floor blocks found")
         return False, errors
 
     if numFloors is not None and len(floorBlocks) > numFloors:
@@ -304,9 +398,13 @@ def validateMapFile(path: str | Path) -> tuple[bool, list[str]]:
         )
 
     for i, block in enumerate(floorBlocks):
+        if debug:
+            print(f"[DEBUG] validateMapFile: validating floor block {i + 1}/{len(floorBlocks)}")
         for e in _validateFloorBlock(block):
             errors.append(f"Floor {i + 1}: {e}")
 
+    if debug:
+        print(f"[DEBUG] validateMapFile -> valid={len(errors) == 0}, {len(errors)} error(s)")
     return len(errors) == 0, errors
 
 
