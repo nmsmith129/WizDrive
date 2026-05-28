@@ -10,7 +10,7 @@ Map file format:
     - Next line: initial facing (N/E/S/W or north/east/south/west)
     - Zero or more object descriptor lines (any order):
         ENEMY|name|hp|attack|speed|x y
-        ITEM|name|value|description
+        ITEM|name|value|description|x y
 
 Example:
 Dungeon of Doom
@@ -23,7 +23,7 @@ Dungeon of Doom
 2 3
 E
 ENEMY|Goblin|10|3|2|4 3
-ITEM|Gold Coin|5|A shiny gold coin
+ITEM|Gold Coin|5|A shiny gold coin|6 3
 
 8
 1 1 1 1 1 1 1 1
@@ -164,14 +164,14 @@ def _parseEnemyLine(line: str, mapSize: int) -> Enemy:
     return enemy
 
 
-def _parseItemLine(line: str) -> Item:
-    # Parses one ITEM|name|value|description descriptor from the object section of a floor block.
+def _parseItemLine(line: str, mapSize: int) -> Item:
+    # Parses one ITEM|name|value|description|x y descriptor from the object section of a floor block.
     if debug:
-        print(f"[DEBUG] _parseItemLine: line={line!r}")
+        print(f"[DEBUG] _parseItemLine: line={line!r}, mapSize={mapSize}")
     parts = line.split("|")
-    if len(parts) != 4:
-        raise ValueError(f"ITEM line must have 4 pipe-separated fields, got {len(parts)}: {line!r}")
-    _, name, rawValue, description = parts
+    if len(parts) != 5:
+        raise ValueError(f"ITEM line must have 5 pipe-separated fields, got {len(parts)}: {line!r}")
+    _, name, rawValue, description, rawPos = parts
     if not name.strip():
         raise ValueError(f"ITEM name must not be empty: {line!r}")
     try:
@@ -180,18 +180,30 @@ def _parseItemLine(line: str) -> Item:
         raise ValueError(f"ITEM value must be an integer: {line!r}")
     if value <= 0:
         raise ValueError(f"ITEM value must be positive: {line!r}")
+    posParts = rawPos.strip().split()
+    if len(posParts) != 2:
+        raise ValueError(f"ITEM position must be 'x y', got: {rawPos!r}")
+    try:
+        x, y = int(posParts[0]), int(posParts[1])
+    except ValueError:
+        raise ValueError(f"ITEM position coordinates must be integers: {rawPos!r}")
+    if not (0 <= x < mapSize and 0 <= y < mapSize):
+        raise ValueError(f"ITEM position ({x}, {y}) out of bounds for map size {mapSize}")
     if debug:
-        print(f"[DEBUG] _parseItemLine -> parsed fields: name={name!r}, value={value}, description={description!r}")
-    item = Item(name.strip(), value, description.strip())
+        print(f"[DEBUG] _parseItemLine -> parsed fields: name={name!r}, value={value}, description={description!r}, pos=({x},{y})")
+    item = Item(name.strip(), value, description.strip(), x, y)
     if debug:
         print(f"[DEBUG] _parseItemLine -> Item object created:")
         print(f"  .name={item.name!r}, .value={item.value}, .description={item.description!r}")
+        print(f"  .grid_x={item.grid_x}, .grid_y={item.grid_y}")
         print(f"  .image={item.image}, size={item.image.get_size()}")
         print(f"  .rect={item.rect}")
         ok = (
             item.name == name.strip()
             and item.value == value
             and item.description == description.strip()
+            and item.grid_x == x
+            and item.grid_y == y
         )
         print(f"[DEBUG] _parseItemLine -> data integrity check: {'PASS' if ok else 'FAIL'}")
     return item
@@ -269,7 +281,11 @@ def _parseFloorBlock(lines: list[str]) -> FloorData:
                 raise ValueError(f"Object line {j}: ENEMY {enemy.name!r} position ({ex}, {ey}) is on a blocked tile")
             enemies.append(enemy)
         elif objLine.startswith("ITEM|"):
-            items.append(_parseItemLine(objLine))
+            item = _parseItemLine(objLine, size)
+            ix, iy = item.grid_x, item.grid_y
+            if grid[iy][ix] != 0:
+                raise ValueError(f"Object line {j}: ITEM {item.name!r} position ({ix}, {iy}) is on a blocked tile")
+            items.append(item)
         else:
             raise ValueError(f"Object line {j}: unrecognised descriptor {objLine!r}")
 
@@ -461,7 +477,10 @@ def _validateFloorBlock(lines: list[str]) -> list[str]:
                 errors.append(f"Object line {j}: {exc}")
         elif objLine.startswith("ITEM|"):
             try:
-                _parseItemLine(objLine)
+                item = _parseItemLine(objLine, size)
+                ix, iy = item.grid_x, item.grid_y
+                if grid is not None and grid[iy][ix] != 0:
+                    errors.append(f"Object line {j}: ITEM {item.name!r} position ({ix}, {iy}) is on a blocked tile")
             except ValueError as exc:
                 errors.append(f"Object line {j}: {exc}")
         else:

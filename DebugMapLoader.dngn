@@ -10,7 +10,7 @@ Debug Dungeon
 2 1
 E
 ENEMY|Goblin|10|3|2|3 2
-ITEM|Gold Coin|5|A shiny gold coin
+ITEM|Gold Coin|5|A shiny gold coin|1 2
 
 4
 1 1 1 1
@@ -20,4 +20,4 @@ ITEM|Gold Coin|5|A shiny gold coin
 1 2
 N
 ENEMY|Skeleton|15|4|1|2 1
-ITEM|Health Potion|20|Restores 20 HP
+ITEM|Health Potion|20|Restores 20 HP|2 2

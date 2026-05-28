@@ -29,7 +29,7 @@ class Player:
                 self.location = (x, y + 1)
             elif self.facing == "west":
                 self.location = (x + 1, y)
-        else
+        else:
             raise ValueError(f"Invalid direction: {direction!r}")
         
     def turn(self, direction: str):
