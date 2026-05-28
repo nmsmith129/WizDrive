@@ -8,7 +8,8 @@ This checklist orders the features from `ROADMAP.md` by the sequence they can be
 - [x] Map file format (`.lvlmap` support)
 - [x] Map validation and error handling
 - [x] Multiple map/level support
-- [ ] Dynamic object placement on maps
+- [x] Dynamic object placement on maps
+- [x] Item descriptions
 - [ ] Stairs/portals for level transitions
 
 - [ ] Player class with position tracking
@@ -94,7 +95,6 @@ This checklist orders the features from `ROADMAP.md` by the sequence they can be
 - [ ] Active spell/ability indicator
 - [ ] Item list display
 - [ ] Equipment screen
-- [ ] Item descriptions
 - [ ] Drop/use/equip controls
 - [ ] Item filtering/sorting
 - [ ] Enemy health display
