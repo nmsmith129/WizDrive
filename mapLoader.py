@@ -40,6 +40,7 @@ from pathlib import Path
 from typing import List, Tuple
 
 from enemy import Enemy
+from enemyTypes import get_stats
 from item import Item
 
 debug = True  # set to True to enable diagnostic output
@@ -55,7 +56,7 @@ FACING_MAP = {
     "west": "west",
 }
 
-FloorData = tuple[List[List[int]], Tuple[int, int], str, List[Enemy], List[Item]]
+FloorData = tuple[List[List[int]], Tuple[int, int], str, List[Enemy], List[Item], Tuple[int, int] | None]
 
 
 def parseRow(rowText: str, size: int) -> List[int]:
@@ -117,23 +118,30 @@ def parseFacingLine(line: str) -> str:
 
 
 def _parseEnemyLine(line: str, mapSize: int) -> Enemy:
-    # Parses one ENEMY|name|hp|attack|speed|x y descriptor from the object section of a floor block.
+    # Parses ENEMY|name|x y (stats from library) or ENEMY|name|hp|attack|speed|x y (explicit stats).
     if debug:
         print(f"[DEBUG] _parseEnemyLine: line={line!r}, mapSize={mapSize}")
     parts = line.split("|")
-    if len(parts) != 6:
-        raise ValueError(f"ENEMY line must have 6 pipe-separated fields, got {len(parts)}: {line!r}")
-    _, name, rawHp, rawAttack, rawSpeed, rawPos = parts
-    if not name.strip():
-        raise ValueError(f"ENEMY name must not be empty: {line!r}")
-    try:
-        hp     = int(rawHp)
-        attack = int(rawAttack)
-        speed  = int(rawSpeed)
-    except ValueError:
-        raise ValueError(f"ENEMY hp/attack/speed must be integers: {line!r}")
-    if hp <= 0 or attack <= 0 or speed <= 0:
-        raise ValueError(f"ENEMY hp/attack/speed must be positive: {line!r}")
+    if len(parts) == 3:
+        _, name, rawPos = parts
+        if not name.strip():
+            raise ValueError(f"ENEMY name must not be empty: {line!r}")
+        stats = get_stats(name.strip())
+        hp, attack, speed = stats["hp"], stats["attack"], stats["speed"]
+    elif len(parts) == 6:
+        _, name, rawHp, rawAttack, rawSpeed, rawPos = parts
+        if not name.strip():
+            raise ValueError(f"ENEMY name must not be empty: {line!r}")
+        try:
+            hp     = int(rawHp)
+            attack = int(rawAttack)
+            speed  = int(rawSpeed)
+        except ValueError:
+            raise ValueError(f"ENEMY hp/attack/speed must be integers: {line!r}")
+        if hp <= 0 or attack <= 0 or speed <= 0:
+            raise ValueError(f"ENEMY hp/attack/speed must be positive: {line!r}")
+    else:
+        raise ValueError(f"ENEMY line must have 3 or 6 pipe-separated fields, got {len(parts)}: {line!r}")
     posParts = rawPos.strip().split()
     if len(posParts) != 2:
         raise ValueError(f"ENEMY position must be 'x y', got: {rawPos!r}")
@@ -273,6 +281,7 @@ def _parseFloorBlock(lines: list[str]) -> FloorData:
 
     enemies: List[Enemy] = []
     items: List[Item] = []
+    stairs: Tuple[int, int] | None = None
     for j, objLine in enumerate(lines[3 + size:], start=1):
         if objLine.startswith("ENEMY|"):
             enemy = _parseEnemyLine(objLine, size)
@@ -286,6 +295,19 @@ def _parseFloorBlock(lines: list[str]) -> FloorData:
             if grid[iy][ix] != 0:
                 raise ValueError(f"Object line {j}: ITEM {item.name!r} position ({ix}, {iy}) is on a blocked tile")
             items.append(item)
+        elif objLine.startswith("STAIRS|"):
+            parts = objLine.split("|")
+            if len(parts) != 2:
+                raise ValueError(f"STAIRS line must be 'STAIRS|x y', got: {objLine!r}")
+            posParts = parts[1].strip().split()
+            if len(posParts) != 2:
+                raise ValueError(f"STAIRS position must be 'x y', got: {parts[1]!r}")
+            sx, sy = int(posParts[0]), int(posParts[1])
+            if not (0 <= sx < size and 0 <= sy < size):
+                raise ValueError(f"STAIRS position ({sx}, {sy}) out of bounds for map size {size}")
+            if grid[sy][sx] != 0:
+                raise ValueError(f"STAIRS position ({sx}, {sy}) is on a blocked tile")
+            stairs = (sx, sy)
         else:
             raise ValueError(f"Object line {j}: unrecognised descriptor {objLine!r}")
 
@@ -299,7 +321,7 @@ def _parseFloorBlock(lines: list[str]) -> FloorData:
             print(f"  enemy: {e.name} hp={e.hp} attack={e.attack} speed={e.speed} pos=({e.grid_x},{e.grid_y})")
         for it in items:
             print(f"  item:  {it.name} value={it.value} desc={it.description!r}")
-    return grid, (playerX, playerY), facing, enemies, items
+    return grid, (playerX, playerY), facing, enemies, items, stairs
 
 
 def _parseMapLines(rawLines: list[str], source: str) -> tuple[str, int, list[FloorData]]:
