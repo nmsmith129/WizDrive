@@ -23,7 +23,7 @@ _, _, floors = loadMapFile(path)
 floor = floors[0]
 grid, start_pos, start_facing, enemies, items = floor
 
-player = Player("Hero", hp=20, mp=10)
+player = Player("Hero", hp=50, mp=10)
 player.location = start_pos
 player.facing = start_facing
 

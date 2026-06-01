@@ -127,7 +127,7 @@ def _parseEnemyLine(line: str, mapSize: int) -> Enemy:
         if not name.strip():
             raise ValueError(f"ENEMY name must not be empty: {line!r}")
         stats = get_stats(name.strip())
-        hp, attack, speed = stats["hp"], stats["attack"], stats["speed"]
+        hp, attack, speed, xp = stats["hp"], stats["attack"], stats["speed"], stats["xp"]
     elif len(parts) == 6:
         _, name, rawHp, rawAttack, rawSpeed, rawPos = parts
         if not name.strip():
@@ -140,6 +140,7 @@ def _parseEnemyLine(line: str, mapSize: int) -> Enemy:
             raise ValueError(f"ENEMY hp/attack/speed must be integers: {line!r}")
         if hp <= 0 or attack <= 0 or speed <= 0:
             raise ValueError(f"ENEMY hp/attack/speed must be positive: {line!r}")
+        xp = get_stats(name.strip())["xp"]
     else:
         raise ValueError(f"ENEMY line must have 3 or 6 pipe-separated fields, got {len(parts)}: {line!r}")
     posParts = rawPos.strip().split()
@@ -153,7 +154,7 @@ def _parseEnemyLine(line: str, mapSize: int) -> Enemy:
         raise ValueError(f"ENEMY position ({x}, {y}) out of bounds for map size {mapSize}")
     if debug:
         print(f"[DEBUG] _parseEnemyLine -> parsed fields: name={name!r}, hp={hp}, attack={attack}, speed={speed}, pos=({x},{y})")
-    enemy = Enemy(name.strip(), hp, attack, speed, x, y)
+    enemy = Enemy(name.strip(), hp, attack, speed, x, y, xp=xp)
     if debug:
         print(f"[DEBUG] _parseEnemyLine -> Enemy object created:")
         print(f"  .name={enemy.name!r}, .hp={enemy.hp}, .attack={enemy.attack}, .speed={enemy.speed}")

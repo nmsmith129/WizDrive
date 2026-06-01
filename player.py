@@ -5,9 +5,10 @@ class Player:
         self.facing = "north"  # Facing direction: 'north', 'east', 'south', 'west'
         self.hp = hp
         self.mp = mp
+        self.xp = 0
 
     def __str__(self):
-        return f"Player(name={self.name!r}, location={self.location}, hp={self.hp}, mp={self.mp})"
+        return f"Player(name={self.name!r}, location={self.location}, hp={self.hp}, mp={self.mp}, xp={self.xp})"
     
     def move(self, direction: str):
         x, y = self.location

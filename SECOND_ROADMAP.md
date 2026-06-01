@@ -17,7 +17,7 @@ Items are ordered so that every feature appears after all features it depends on
 - [x] Player rotation system (facing direction)
 - [x] MazeObject class for enemies
 - [x] Enemy health/stats system
-- [ ] Multiple enemy types
+- [x] Multiple enemy types
 - [x] Enemy placement on maps
 - [x] Item placement on maps (chests, torches)
 
