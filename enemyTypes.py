@@ -21,6 +21,7 @@ ENEMY_TYPES: dict[str, EnemyStats] = {
 }
 
 def get_stats(name: str) -> EnemyStats:
+    # Returns the stat block for a named enemy type, falling back to defaults for unknown names.
     if name in ENEMY_TYPES:
         return ENEMY_TYPES[name]
     return {"hp": 10, "attack": 3, "speed": 1, "xp": 0}

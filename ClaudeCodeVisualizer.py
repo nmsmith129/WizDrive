@@ -12,6 +12,7 @@ from textVisualizer import render_floor
 
 
 def run(dungeon_path=None, key=None):
+    # Loads or resumes a dungeon run, applies an optional keypress, then renders the current floor.
     if dungeon_path:
         _, _, floors = loadMapFile(dungeon_path)
         state = GameState.new(dungeon_path, floors)

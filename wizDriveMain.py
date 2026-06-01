@@ -22,6 +22,7 @@ elif VISUALIZER == 2:
 
 
 def run_pygame(state):
+    # Runs the pygame event loop, drawing the dungeon and routing WASD keypresses into game state.
     grid_size = len(state.grid)
     tile_size = 32
     screen = pygame.display.set_mode((grid_size * tile_size, grid_size * tile_size))
@@ -58,6 +59,7 @@ def run_pygame(state):
 
 
 def run_text(state):
+    # Runs a terminal-mode game loop, redrawing the ASCII map after each keypress.
     import msvcrt
     print("Controls: W=forward, S=backward, A=turn left, D=turn right, Q=quit")
     render_floor(

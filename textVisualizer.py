@@ -23,6 +23,7 @@ _FACING_ARROW = {
 
 
 def render_floor(floor, floor_num: int) -> None:
+    # Prints an ASCII grid of the current floor to stdout with player, enemy, item, and stair symbols.
     grid, player_pos, facing, enemies, items, stairs = floor
     grid_size = len(grid)
 

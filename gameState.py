@@ -17,6 +17,7 @@ _BACK_DELTAS = {"north": (0, -1), "south": (0, 1), "east": (-1, 0), "west": (1, 
 
 class GameState:
     def __init__(self, dungeon_path, floors, floor_index, player, enemies):
+        # Stores all runtime game state: dungeon path, loaded floors, current floor index, player, and enemy list.
         self.dungeon_path = dungeon_path
         self.floors = floors
         self.floor_index = floor_index
@@ -25,18 +26,22 @@ class GameState:
 
     @property
     def grid(self):
+        # Returns the tile grid for the current floor.
         return self.floors[self.floor_index][0]
 
     @property
     def items(self):
+        # Returns the item list for the current floor.
         return self.floors[self.floor_index][4]
 
     @property
     def stairs(self):
+        # Returns the stair coordinates for the current floor, or None if absent.
         return self.floors[self.floor_index][5]
 
     @classmethod
     def new(cls, dungeon_path, floors):
+        # Creates a fresh GameState from the first floor of a loaded dungeon, with a default Hero player.
         grid, start_pos, start_facing, enemies, items, stairs = floors[0]
         player = Player("Hero", hp=50, mp=10)
         player.location = start_pos
@@ -45,6 +50,7 @@ class GameState:
 
     @classmethod
     def from_save(cls):
+        # Reconstructs a GameState by loading the JSON save file and re-parsing its dungeon.
         with open(STATE_FILE) as f:
             data = json.load(f)
         _, _, floors = loadMapFile(data["dungeon"])
@@ -60,6 +66,7 @@ class GameState:
         return cls(data["dungeon"], floors, data["floor"], player, enemies)
 
     def save(self):
+        # Serializes the current game state to the JSON save file.
         data = {
             "dungeon": self.dungeon_path,
             "floor": self.floor_index,
@@ -79,27 +86,32 @@ class GameState:
             json.dump(data, f)
 
     def _is_wall(self, x, y):
+        # Returns True if (x, y) is out of bounds or a wall tile.
         grid = self.grid
         size = len(grid)
         return x < 0 or y < 0 or x >= size or y >= size or grid[y][x] == 1
 
     def _enemy_at(self, x, y):
+        # Returns the enemy occupying grid position (x, y), or None if the tile is empty.
         for e in self.enemies:
             if e.grid_x == x and e.grid_y == y:
                 return e
         return None
 
     def _next_pos(self):
+        # Returns the grid coordinates one step ahead of the player.
         x, y = self.player.location
         dx, dy = _MOVE_DELTAS[self.player.facing]
         return x + dx, y + dy
 
     def _behind_pos(self):
+        # Returns the grid coordinates one step behind the player.
         x, y = self.player.location
         dx, dy = _BACK_DELTAS[self.player.facing]
         return x + dx, y + dy
 
     def _do_combat(self, enemy):
+        # Executes one round of combat: player attacks the enemy, then the enemy counter-attacks if it survives.
         enemy.hp -= PLAYER_ATTACK
         print(f"You attack {enemy.name} for {PLAYER_ATTACK} damage! ({enemy.hp} HP remaining)")
         if enemy.hp <= 0:
@@ -114,6 +126,7 @@ class GameState:
                 print("You have been defeated!")
 
     def apply_key(self, key):
+        # Processes a single keypress (WASD) and updates movement, combat, or floor transitions accordingly.
         key = key.lower()
         if key in ("w", "s"):
             nx, ny = self._next_pos() if key == "w" else self._behind_pos()
