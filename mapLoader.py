@@ -506,6 +506,23 @@ def _validateFloorBlock(lines: list[str]) -> list[str]:
                     errors.append(f"Object line {j}: ITEM {item.name!r} position ({ix}, {iy}) is on a blocked tile")
             except ValueError as exc:
                 errors.append(f"Object line {j}: {exc}")
+        elif objLine.startswith("STAIRS|"):
+            parts = objLine.split("|")
+            if len(parts) != 2:
+                errors.append(f"Object line {j}: STAIRS line must be 'STAIRS|x y', got: {objLine!r}")
+            else:
+                posParts = parts[1].strip().split()
+                if len(posParts) != 2:
+                    errors.append(f"Object line {j}: STAIRS position must be 'x y', got: {parts[1]!r}")
+                else:
+                    try:
+                        sx, sy = int(posParts[0]), int(posParts[1])
+                        if not (0 <= sx < size and 0 <= sy < size):
+                            errors.append(f"Object line {j}: STAIRS position ({sx}, {sy}) out of bounds for map size {size}")
+                        elif grid is not None and grid[sy][sx] != 0:
+                            errors.append(f"Object line {j}: STAIRS position ({sx}, {sy}) is on a blocked tile")
+                    except ValueError:
+                        errors.append(f"Object line {j}: STAIRS position coordinates must be integers: {parts[1]!r}")
         else:
             errors.append(f"Object line {j}: unrecognised descriptor {objLine!r}")
 
