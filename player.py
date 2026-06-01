@@ -1,16 +1,17 @@
 class Player:
     def __init__(self, name: str, hp: int, mp: int):
-        # Initializes the player with a name, hit points, mana points, and default position/facing/xp.
+        # Initializes the player with a name, hit points, mana points, and default position/facing/xp/level.
         self.name = name
         self.location = (0, 0)  # Starting location (x, y)
         self.facing = "north"  # Facing direction: 'north', 'east', 'south', 'west'
         self.hp = hp
         self.mp = mp
         self.xp = 0
+        self.level = 1
 
     def __str__(self):
         # Returns a debug-friendly string representation of the player's current state.
-        return f"Player(name={self.name!r}, location={self.location}, hp={self.hp}, mp={self.mp}, xp={self.xp})"
+        return f"Player(name={self.name!r}, location={self.location}, hp={self.hp}, mp={self.mp}, xp={self.xp}, level={self.level})"
     
     def move(self, direction: str):
         # Steps the player forward or backward along their current facing direction.

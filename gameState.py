@@ -58,6 +58,7 @@ class GameState:
         player.location = (data["x"], data["y"])
         player.facing = data["facing"]
         player.xp = data.get("xp", 0)
+        player.level = data.get("level", 1)
         enemies = [
             Enemy(e["name"], hp=e["hp"], attack=e["attack"], speed=e["speed"],
                   grid_x=e["grid_x"], grid_y=e["grid_y"], xp=e.get("xp", 0))
@@ -76,6 +77,7 @@ class GameState:
             "hp": self.player.hp,
             "mp": self.player.mp,
             "xp": self.player.xp,
+            "level": self.player.level,
             "enemies": [
                 {"name": e.name, "hp": e.hp, "attack": e.attack, "speed": e.speed,
                  "grid_x": e.grid_x, "grid_y": e.grid_y, "xp": e.xp}
@@ -117,8 +119,13 @@ class GameState:
         if enemy.hp <= 0:
             print(f"{enemy.name} is defeated!")
             self.enemies.remove(enemy)
+            xp_before = self.player.xp
             self.player.xp += enemy.xp
             print(f"You gained {enemy.xp} XP! (Total: {self.player.xp})")
+            levels_gained = (self.player.xp // 10) - (xp_before // 10)
+            if levels_gained > 0:
+                self.player.level += levels_gained
+                print(f"Level up! You are now level {self.player.level}!")
         else:
             self.player.hp -= enemy.attack
             print(f"{enemy.name} hits back for {enemy.attack} damage! (Your HP: {self.player.hp})")
