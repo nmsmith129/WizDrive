@@ -1,3 +1,4 @@
+import sys
 import pygame
 
 # pygame must be initialized before loadMapFile, since Enemy/Item create
@@ -8,7 +9,16 @@ from mapLoader import loadMapFile
 from mapVisualizer import run_debug_viewer
 from player import Player
 
-_, _, floors = loadMapFile("DebugMapLoader.dngn")
+if len(sys.argv) < 2:
+    print("Error: no dungeon file specified. Usage: python test_visualizer.py <file.dngn>")
+    sys.exit(1)
+
+path = sys.argv[1]
+if not path.endswith(".dngn"):
+    print(f"Error: '{path}' is not a .dngn file.")
+    sys.exit(1)
+
+_, _, floors = loadMapFile(path)
 
 floor = floors[0]
 grid, start_pos, start_facing, enemies, items = floor

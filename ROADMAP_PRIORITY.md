@@ -12,8 +12,8 @@ This checklist orders the features from `ROADMAP.md` by the sequence they can be
 - [x] Item descriptions
 - [ ] Stairs/portals for level transitions
 
-- [ ] Player class with position tracking
-- [ ] Player rotation system (facing direction)
+- [x] Player class with position tracking
+- [x] Player rotation system (facing direction)
 - [ ] Movement validation (collision detection with walls)
 
 - [ ] Basic 3D perspective drawing system
@@ -21,8 +21,8 @@ This checklist orders the features from `ROADMAP.md` by the sequence they can be
 - [ ] Texture mapping for walls
 - [ ] UI overlay for HUD
 
-- [ ] MazeObject class for enemies
-- [ ] Enemy placement on maps
+- [x] MazeObject class for enemies
+- [x] Enemy placement on maps
 - [ ] Enemy detection in view
 - [ ] Melee attack mechanics
 - [ ] Attack hit calculation
@@ -30,15 +30,15 @@ This checklist orders the features from `ROADMAP.md` by the sequence they can be
 - [ ] Enemy death handling and removal
 - [ ] Combat animations
 
-- [ ] Item placement on maps (chests, torches)
+- [x] Item placement on maps (chests, torches)
 - [ ] Item pickup mechanics
 - [ ] Item use/equip system
 - [ ] Equipment slots (weapon, armor, etc.)
 - [ ] Player inventory system
 
 - [ ] Player attributes (health, mana, experience, level)
-- [ ] Health/Hit Points (HP)
-- [ ] Mana/Spell Points (MP)
+- [x] Health/Hit Points (HP)
+- [x] Mana/Spell Points (MP)
 - [ ] Experience points (XP)
 - [ ] Level system
 - [ ] Attribute system (Strength, Intelligence, Dexterity, Constitution, Wisdom, Charisma)
@@ -50,7 +50,7 @@ This checklist orders the features from `ROADMAP.md` by the sequence they can be
 - [ ] Level-specific enemy types
 - [ ] Level-specific treasure
 - [ ] Difficulty scaling per level
-- [ ] Enemy health/stats system
+- [x] Enemy health/stats system
 - [ ] Multiple enemy types
 
 - [ ] Enemy AI (pathfinding, aggression)
@@ -127,8 +127,8 @@ This checklist orders the features from `ROADMAP.md` by the sequence they can be
 - [ ] Screen transitions
 - [ ] Weather effects
 - [ ] Character sprites
-- [ ] Enemy sprites
-- [ ] Item sprites
+- [x] Enemy sprites
+- [x] Item sprites
 - [ ] Wall textures
 - [ ] UI elements/icons
 - [ ] Visual effects
