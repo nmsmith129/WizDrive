@@ -9,11 +9,6 @@ from enemy import Enemy
 
 STATE_FILE = os.path.join(os.path.dirname(__file__), "game_state.json")
 
-PLAYER_ATTACK = 5
-
-_MOVE_DELTAS = {"north": (0, 1), "south": (0, -1), "east": (1, 0), "west": (-1, 0)}
-_BACK_DELTAS = {"north": (0, -1), "south": (0, 1), "east": (-1, 0), "west": (1, 0)}
-
 
 class GameState:
     def __init__(self, dungeon_path, floors, floor_index, player, enemies):
@@ -100,46 +95,15 @@ class GameState:
                 return e
         return None
 
-    def _next_pos(self):
-        # Returns the grid coordinates one step ahead of the player.
-        x, y = self.player.location
-        dx, dy = _MOVE_DELTAS[self.player.facing]
-        return x + dx, y + dy
-
-    def _behind_pos(self):
-        # Returns the grid coordinates one step behind the player.
-        x, y = self.player.location
-        dx, dy = _BACK_DELTAS[self.player.facing]
-        return x + dx, y + dy
-
-    def _do_combat(self, enemy):
-        # Executes one round of combat: player attacks the enemy, then the enemy counter-attacks if it survives.
-        enemy.hp -= PLAYER_ATTACK
-        print(f"You attack {enemy.name} for {PLAYER_ATTACK} damage! ({enemy.hp} HP remaining)")
-        if enemy.hp <= 0:
-            print(f"{enemy.name} is defeated!")
-            self.enemies.remove(enemy)
-            xp_before = self.player.xp
-            self.player.xp += enemy.xp
-            print(f"You gained {enemy.xp} XP! (Total: {self.player.xp})")
-            levels_gained = (self.player.xp // 10) - (xp_before // 10)
-            if levels_gained > 0:
-                self.player.level += levels_gained
-                print(f"Level up! You are now level {self.player.level}!")
-        else:
-            self.player.hp -= enemy.attack
-            print(f"{enemy.name} hits back for {enemy.attack} damage! (Your HP: {self.player.hp})")
-            if self.player.hp <= 0:
-                print("You have been defeated!")
-
     def apply_key(self, key):
         # Processes a single keypress (WASD) and updates movement, combat, or floor transitions accordingly.
         key = key.lower()
         if key in ("w", "s"):
-            nx, ny = self._next_pos() if key == "w" else self._behind_pos()
+            nx, ny = self.player.next_pos() if key == "w" else self.player.prev_pos()
             target = self._enemy_at(nx, ny)
             if target:
-                self._do_combat(target)
+                if self.player.attack(target):
+                    self.enemies.remove(target)
             elif self._is_wall(nx, ny):
                 print("Blocked by a wall.")
             else:
