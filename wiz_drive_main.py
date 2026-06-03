@@ -2,8 +2,7 @@ import sys
 
 # 0 = pygame visualizer
 # 1 = text visualizer (terminal, real-time keypresses)
-# 2 = ClaudeCode visualizer (single keystroke arg, saves state between runs)
-VISUALIZER = 2
+VISUALIZER = 0
 
 import pygame
 pygame.init()
@@ -17,8 +16,7 @@ if VISUALIZER == 0:
     from map_visualizer import MapVisualizer
 elif VISUALIZER == 1:
     from text_visualizer import render_floor
-elif VISUALIZER == 2:
-    import claude_code_visualizer
+
 
 
 def run_pygame(state):
@@ -49,7 +47,7 @@ def run_pygame(state):
 
         screen.fill((0, 0, 0))
         visualizer.draw(
-            (state.grid, state.player.location, state.player.facing, state.enemies, state.items),
+            (state.grid, state.player.location, state.player.facing, state.enemies, state.items, state.stairs),
             state.player,
         )
         pygame.display.flip()
