@@ -70,6 +70,19 @@ class TestSaveLoadRoundTrip:
         _make_state("d.dngn", 0, _make_player(mp=5), []).save()
         assert _load(state_file)["mp"] == 5
 
+    def test_player_attributes_persist(self, state_file):
+        p = _make_player()
+        p.attack, p.strength, p.defense = 0.75, 4, 2
+        p.max_hp, p.intelligence, p.mana = 30, 6, 12
+        _make_state("d.dngn", 0, p, []).save()
+        saved = _load(state_file)
+        assert saved["attack"] == 0.75
+        assert saved["strength"] == 4
+        assert saved["defense"] == 2
+        assert saved["max_hp"] == 30
+        assert saved["intelligence"] == 6
+        assert saved["mana"] == 12
+
     def test_empty_enemies_list_persists(self, state_file):
         _make_state("d.dngn", 0, _make_player(), []).save()
         assert _load(state_file)["enemies"] == []

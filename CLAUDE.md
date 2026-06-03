@@ -137,9 +137,11 @@ FloorData = tuple[
 ### Key Classes
 
 **`Player`** (`player.py`) — no pygame dependency  
-`location: (x, y)`, `facing: str`, `hp: int`, `mp: int`  
-`move("forward"|"backward")`, `turn("left"|"right")`  
-`attack()`, `cast_spell()`, `use_item()` are placeholder stubs.
+`location: (x, y)`, `facing: str`  
+Attributes (defaults): `attack: float = 0.5` (hit chance), `strength: int = 1` (base damage), `defense: int = 1` (damage reduction), `max_hp: int = 10`, `intelligence: int = 1` (spell effectiveness, unused until spells exist), `mana: int = 1` (max mana). `weapon = None` is an equipment stub exposing `.strength` once filled.  
+`hp`/`mp` are the *current* HP/mana; they start full (`max_hp`/`mana`) unless passed explicitly.  
+`move("forward"|"backward")`, `turn("left"|"right")`, `strike(enemy)`  
+`cast_spell()`, `use_item()` are placeholder stubs.
 
 **`Enemy`** (`enemy.py`) — extends `pygame.sprite.Sprite`  
 Rendered as a red 32×32 surface. Fields: `name`, `hp`, `attack`, `speed`, `grid_x`, `grid_y`.  
@@ -162,13 +164,13 @@ Set `map_loader.debug = False` (as done in all entry-point files) to suppress ve
 
 ## Combat
 
-Combat is dispatched by `GameState.apply_key()` (`game_state.py`): when the player moves (`w`/`s`) into a tile occupied by an enemy, `Player.attack(enemy)` (`player.py`) runs instead of movement:
+Combat is dispatched by `GameState.apply_key()` (`game_state.py`): when the player moves (`w`/`s`) into a tile occupied by an enemy, `Player.strike(enemy)` (`player.py`) runs instead of movement:
 
-- Player deals `PLAYER_ATTACK = 5` damage to the enemy.
+- `strike()` rolls `random.random() < player.attack` to hit. On a hit the player deals `strength + weapon.strength` damage (weapon strength is 0 while `weapon is None`).
 - On a kill: the enemy is removed from the enemy list, its `xp` is awarded to the player, and the player levels up once per 10 XP.
-- If the enemy survives, it counter-attacks for `enemy.attack` damage.
+- Whether the strike missed or the enemy merely survived, the enemy counter-attacks for `max(1, enemy.attack - player.defense)` (always at least 1).
 
-`Player.attack()` returns `True` when the enemy is defeated. Player death is printed but does not halt the game loop yet.
+`Player.strike()` returns `True` when the enemy is defeated. Player death is printed but does not halt the game loop yet. Combat is now probabilistic, so tests monkeypatch `player.random.random` for determinism.
 
 ## Floor Transitions
 
@@ -224,8 +226,8 @@ pygame Surfaces. Current coverage by file:
 |-----------|--------|
 | `test_map_loader.py` | `load_map_file` / `load_map_text`, grid reversal, enemy/item/stairs/player parsing, multi-floor |
 | `test_validate_map.py` | `validate_map_file` valid + error paths |
-| `test_player.py` | `Player` init, movement, turning |
-| `test_combat.py` | `Player.attack`, wall detection |
+| `test_player.py` | `Player` init, attribute defaults, movement, turning |
+| `test_combat.py` | `Player.strike` (hit/miss rolls, weapon damage, counter-attacks), wall detection |
 | `test_state.py` | `GameState` save/load round-trip |
 | `test_enemy_types.py` | `ENEMY_TYPES` / `get_stats` |
 | `test_text_visualizer.py` | ASCII rendering, symbol priority, facing line |
