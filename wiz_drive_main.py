@@ -14,7 +14,7 @@ from map_loader import load_map_file
 from game_state import GameState
 
 if VISUALIZER == 0:
-    from map_visualizer import map_visualizer
+    from map_visualizer import MapVisualizer
 elif VISUALIZER == 1:
     from text_visualizer import render_floor
 elif VISUALIZER == 2:
@@ -27,7 +27,7 @@ def run_pygame(state):
     tile_size = 32
     screen = pygame.display.set_mode((grid_size * tile_size, grid_size * tile_size))
     pygame.display.set_caption("WizDrive")
-    visualizer = map_visualizer(screen, tile_size=tile_size)
+    visualizer = MapVisualizer(screen, tile_size=tile_size)
     clock = pygame.time.Clock()
 
     running = True

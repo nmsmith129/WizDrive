@@ -134,7 +134,7 @@ FloorData = (grid, playerPos, facing, enemies, items, stairs)
     ├─▶ Player object  (player.py)
     │
     └─▶ Visualizer
-           ├── map_visualizer.draw()      (pygame)
+           ├── MapVisualizer.draw()      (pygame)
            ├── render_floor()            (text/ASCII)
            └── claude_code_visualizer.run() (stateful JSON)
 ```
@@ -197,7 +197,7 @@ Stepping onto a `STAIRS` tile (after a successful move) advances `floor_index` a
 
 - **Python 3.11+**, no virtual-environment setup checked in; `pygame` is the only external dependency.
 - **Type hints** used throughout. Use `from __future__ import annotations` for forward references.
-- **Naming**: `snake_case` for classes, modules, functions, and all variables, with `_leading_underscore` for module-private functions.
+- **Naming**: `snake_case` for modules, functions, and variables; `PascalCase` for classes; `UPPER_SNAKE_CASE` for constants. `_leading_underscore` for module-private functions.
 - **Error messages** use `!r` (repr) formatting for untrusted/user-supplied values.
 - **No comments** on obvious code. Comments appear only for non-obvious constraints (e.g. "pygame must be initialized before load_map_file").
 - **`map_loader.debug`** is a module-level bool. Set it to `False` in every entry-point file before calling any loader function. Never leave it `True` in committed code that runs as part of the game.

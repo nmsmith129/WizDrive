@@ -56,6 +56,7 @@ FACING_MAP = {
     "west": "west",
 }
 
+# (grid[y][x]: 0=open/1=wall, player start (x, y), facing, enemies, items, stairs (x, y) or None)
 floor_data = tuple[List[List[int]], Tuple[int, int], str, List[Enemy], List[Item], Tuple[int, int] | None]
 
 

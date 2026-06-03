@@ -20,7 +20,7 @@ _FACING_DELTA: dict[str, tuple[int, int]] = {
 }
 
 
-class map_visualizer:
+class MapVisualizer:
     def __init__(
         self,
         surface: pygame.Surface,
@@ -92,7 +92,7 @@ def run_debug_viewer(data_for_floor: floor_data, player: Player | None = None) -
     screen = pygame.display.set_mode((grid_size * tile_size, grid_size * tile_size))
     pygame.display.set_caption("WizDrive — Debug Map Viewer")
 
-    visualizer = map_visualizer(screen, tile_size=tile_size)
+    visualizer = MapVisualizer(screen, tile_size=tile_size)
     clock = pygame.time.Clock()
 
     running = True
