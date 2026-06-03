@@ -210,6 +210,52 @@ class TestItemParsing:
         with pytest.raises(ValueError, match="positive"):
             load_map_text(text)
 
+    def test_item_shorthand_pulls_library_stats(self):
+        text = OPEN_5x5 + "ITEM|Iron Sword|2 2\n"
+        _, _, floors = load_map_text(text)
+        _, _, _, _, items, _ = floors[0]
+        it = items[0]
+        assert it.name == "Iron Sword"
+        assert it.value == 30
+        assert it.description == "A sturdy iron blade"
+        assert it.category == "weapon"
+        assert it.effect == {"strength": 4}
+        assert (it.grid_x, it.grid_y) == (2, 2)
+
+    def test_item_shorthand_consumable_effect(self):
+        text = OPEN_5x5 + "ITEM|Health Potion|1 1\n"
+        _, _, floors = load_map_text(text)
+        it = floors[0][4][0]
+        assert it.category == "consumable"
+        assert it.effect == {"heal": 15}
+
+    def test_item_shorthand_unknown_name_uses_default(self):
+        text = OPEN_5x5 + "ITEM|Mystery Trinket|1 1\n"
+        _, _, floors = load_map_text(text)
+        it = floors[0][4][0]
+        assert it.value == 1
+        assert it.category == "misc"
+        assert it.effect == {}
+
+    def test_explicit_item_gets_category_from_library(self):
+        text = OPEN_5x5 + "ITEM|Iron Sword|99|Reforged|2 2\n"
+        _, _, floors = load_map_text(text)
+        it = floors[0][4][0]
+        assert it.value == 99
+        assert it.description == "Reforged"
+        assert it.category == "weapon"
+        assert it.effect == {"strength": 4}
+
+    def test_item_shorthand_out_of_bounds_raises(self):
+        text = OPEN_5x5 + "ITEM|Iron Sword|9 9\n"
+        with pytest.raises(ValueError, match="out of bounds"):
+            load_map_text(text)
+
+    def test_item_wrong_field_count_raises(self):
+        text = OPEN_5x5 + "ITEM|Gold|5|1 1\n"
+        with pytest.raises(ValueError, match="3 or 5"):
+            load_map_text(text)
+
 
 class TestStairsParsing:
     def test_stairs_parsed_correctly(self):

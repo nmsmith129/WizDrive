@@ -32,6 +32,26 @@ class TestValidateMapFileValid:
         _, errors = validate_map_file(str(f))
         assert errors == []
 
+    def test_item_shorthand_is_valid(self, tmp_path):
+        content = textwrap.dedent("""\
+            Test
+            1
+
+            5
+            1 1 1 1 1
+            1 0 0 0 1
+            1 0 0 0 1
+            1 0 0 0 1
+            1 1 1 1 1
+            1 1
+            N
+            ITEM|Iron Sword|2 2
+        """)
+        f = tmp_path / "map.dngn"
+        f.write_text(content)
+        valid, errors = validate_map_file(str(f))
+        assert valid is True, errors
+
 
 class TestValidateMapFileErrors:
     def test_nonexistent_file_returns_false(self, tmp_path):

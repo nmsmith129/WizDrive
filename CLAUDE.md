@@ -11,7 +11,7 @@ wiz_drive_main.py          Entry point; selects visualizer mode, runs the game l
 map_loader.py             .dngn file parser, validator, and loader
 player.py                Player class (position, facing, movement, stubs for combat/spells)
 enemy.py                 Enemy class (extends pygame.sprite.Sprite) + ENEMY_TYPES table + get_stats()
-item.py                  Item class — extends pygame.sprite.Sprite
+item.py                  Item class (extends pygame.sprite.Sprite) + ITEM_TYPES table + get_item_stats()
 map_visualizer.py         Pygame top-down 2D map renderer + standalone debug viewer
 text_visualizer.py        ASCII terminal renderer, renders current floor as text
 game_state.py            GameState: runtime state, movement/combat dispatch, JSON save/load
@@ -83,7 +83,8 @@ Each floor block (separated from others by blank lines):
 <facing>         ← N/E/S/W or north/east/south/west (case-insensitive)
 [ENEMY|name|px py]                         ← uses stats from ENEMY_TYPES library
 [ENEMY|name|hp|attack|speed|px py]         ← explicit stats
-[ITEM|name|value|description|px py]
+[ITEM|name|px py]                          ← uses value/description/category/effect from ITEM_TYPES library
+[ITEM|name|value|description|px py]        ← explicit value/description (category/effect still from library by name)
 [STAIRS|px py]
 ```
 
@@ -147,7 +148,8 @@ Rendered as a red 32×32 surface. Fields: `name`, `hp`, `attack`, `speed`, `grid
 Stats for named enemies come from `enemy.ENEMY_TYPES`; unknown names fall back to `{hp:10, attack:3, speed:1}`.
 
 **`Item`** (`item.py`) — extends `pygame.sprite.Sprite`  
-Rendered as a gold/yellow 32×32 surface. Fields: `name`, `value`, `description`, `grid_x`, `grid_y`.
+Rendered as a gold/yellow 32×32 surface. Fields: `name`, `value`, `description`, `category` (`weapon`/`armor`/`consumable`/`treasure`/`misc`), `effect` (category-specific bonus dict, e.g. `{"strength": 4}`), `grid_x`, `grid_y`.  
+Named items can pull `value`/`description`/`category`/`effect` from `item.ITEM_TYPES` via `get_item_stats()`; unknown names fall back to `{value:1, category:"misc", description:""}`.
 
 ### `map_loader.py` Public API
 
@@ -229,6 +231,7 @@ pygame Surfaces. Current coverage by file:
 | `test_combat.py` | `Player.strike` (hit/miss rolls, weapon damage, counter-attacks), wall detection |
 | `test_state.py` | `GameState` save/load round-trip |
 | `test_enemy_types.py` | `ENEMY_TYPES` / `get_stats` |
+| `test_item_types.py` | `ITEM_TYPES` / `get_item_stats`, category/effect entries |
 | `test_text_visualizer.py` | ASCII rendering, symbol priority, facing line |
 
 When adding new `.dngn` parser features, test both `load_map_file` and `validate_map_file` paths, and exercise `load_map_text` for in-memory cases.

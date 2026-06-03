@@ -40,7 +40,7 @@ from pathlib import Path
 from typing import List, Tuple
 
 from enemy import Enemy, get_stats
-from item import Item
+from item import Item, get_item_stats
 
 debug = True  # set to True to enable diagnostic output
 
@@ -174,21 +174,31 @@ def _parse_enemy_line(line: str, map_size: int) -> Enemy:
 
 
 def _parse_item_line(line: str, map_size: int) -> Item:
-    # Parses one ITEM|name|value|description|x y descriptor from the object section of a floor block.
+    # Parses ITEM|name|x y (stats from library) or ITEM|name|value|description|x y (explicit value/description).
     if debug:
         print(f"[DEBUG] _parse_item_line: line={line!r}, map_size={map_size}")
     parts = line.split("|")
-    if len(parts) != 5:
-        raise ValueError(f"ITEM line must have 5 pipe-separated fields, got {len(parts)}: {line!r}")
-    _, name, raw_value, description, raw_pos = parts
-    if not name.strip():
-        raise ValueError(f"ITEM name must not be empty: {line!r}")
-    try:
-        value = int(raw_value)
-    except ValueError:
-        raise ValueError(f"ITEM value must be an integer: {line!r}")
-    if value <= 0:
-        raise ValueError(f"ITEM value must be positive: {line!r}")
+    if len(parts) == 3:
+        _, name, raw_pos = parts
+        if not name.strip():
+            raise ValueError(f"ITEM name must not be empty: {line!r}")
+        stats = get_item_stats(name.strip())
+        value, description = stats["value"], stats["description"]
+    elif len(parts) == 5:
+        _, name, raw_value, description, raw_pos = parts
+        if not name.strip():
+            raise ValueError(f"ITEM name must not be empty: {line!r}")
+        try:
+            value = int(raw_value)
+        except ValueError:
+            raise ValueError(f"ITEM value must be an integer: {line!r}")
+        if value <= 0:
+            raise ValueError(f"ITEM value must be positive: {line!r}")
+        stats = get_item_stats(name.strip())
+    else:
+        raise ValueError(f"ITEM line must have 3 or 5 pipe-separated fields, got {len(parts)}: {line!r}")
+    category = stats["category"]
+    effect = {k: v for k, v in stats.items() if k not in ("value", "category", "description")}
     pos_parts = raw_pos.strip().split()
     if len(pos_parts) != 2:
         raise ValueError(f"ITEM position must be 'x y', got: {raw_pos!r}")
@@ -199,8 +209,8 @@ def _parse_item_line(line: str, map_size: int) -> Item:
     if not (0 <= x < map_size and 0 <= y < map_size):
         raise ValueError(f"ITEM position ({x}, {y}) out of bounds for map size {map_size}")
     if debug:
-        print(f"[DEBUG] _parse_item_line -> parsed fields: name={name!r}, value={value}, description={description!r}, pos=({x},{y})")
-    item = Item(name.strip(), value, description.strip(), x, y)
+        print(f"[DEBUG] _parse_item_line -> parsed fields: name={name!r}, value={value}, description={description!r}, category={category!r}, effect={effect}, pos=({x},{y})")
+    item = Item(name.strip(), value, description.strip(), x, y, category=category, effect=effect)
     if debug:
         print(f"[DEBUG] _parse_item_line -> Item object created:")
         print(f"  .name={item.name!r}, .value={item.value}, .description={item.description!r}")
