@@ -1,5 +1,5 @@
 import pytest
-from textVisualizer import render_floor
+from text_visualizer import render_floor
 from enemy import Enemy
 from item import Item
 

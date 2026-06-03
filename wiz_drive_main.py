@@ -8,17 +8,17 @@ VISUALIZER = 2
 import pygame
 pygame.init()
 
-import mapLoader
-mapLoader.debug = False
-from mapLoader import loadMapFile
-from gameState import GameState
+import map_loader
+map_loader.debug = False
+from map_loader import load_map_file
+from game_state import GameState
 
 if VISUALIZER == 0:
-    from mapVisualizer import MapVisualizer
+    from map_visualizer import map_visualizer
 elif VISUALIZER == 1:
-    from textVisualizer import render_floor
+    from text_visualizer import render_floor
 elif VISUALIZER == 2:
-    import ClaudeCodeVisualizer
+    import claude_code_visualizer
 
 
 def run_pygame(state):
@@ -27,7 +27,7 @@ def run_pygame(state):
     tile_size = 32
     screen = pygame.display.set_mode((grid_size * tile_size, grid_size * tile_size))
     pygame.display.set_caption("WizDrive")
-    visualizer = MapVisualizer(screen, tile_size=tile_size)
+    visualizer = map_visualizer(screen, tile_size=tile_size)
     clock = pygame.time.Clock()
 
     running = True
@@ -81,14 +81,14 @@ def run_text(state):
 
 if __name__ == "__main__":
     if VISUALIZER == 2:
-        ClaudeCodeVisualizer.run(
+        claude_code_visualizer.run(
             dungeon_path=sys.argv[1] if len(sys.argv) > 1 and sys.argv[1].endswith(".dngn") else None,
             key=sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].endswith(".dngn") else None,
         )
         sys.exit(0)
 
     if len(sys.argv) < 2:
-        print("Usage: python wizDriveMain.py <file.dngn>")
+        print("Usage: python wiz_drive_main.py <file.dngn>")
         sys.exit(1)
 
     path = sys.argv[1]
@@ -96,7 +96,7 @@ if __name__ == "__main__":
         print(f"Error: '{path}' is not a .dngn file.")
         sys.exit(1)
 
-    _, _, floors = loadMapFile(path)
+    _, _, floors = load_map_file(path)
     state = GameState.new(path, floors)
 
     if VISUALIZER == 0:

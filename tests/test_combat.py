@@ -1,5 +1,5 @@
 import pytest
-from gameState import GameState
+from game_state import GameState
 from player import Player, PLAYER_ATTACK
 from enemy import Enemy
 

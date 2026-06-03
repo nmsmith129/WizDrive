@@ -7,19 +7,19 @@ WizDrive is a Python/Pygame dungeon crawler inspired by Wizardry. The project is
 ## Repository Layout
 
 ```
-wizDriveMain.py          Entry point; selects visualizer mode, runs the game loop
-mapLoader.py             .dngn file parser, validator, and loader
+wiz_drive_main.py          Entry point; selects visualizer mode, runs the game loop
+map_loader.py             .dngn file parser, validator, and loader
 player.py                Player class (position, facing, movement, stubs for combat/spells)
 enemy.py                 Enemy class — extends pygame.sprite.Sprite
-enemyTypes.py            ENEMY_TYPES lookup table + get_stats() helper
+enemy_types.py            ENEMY_TYPES lookup table + get_stats() helper
 item.py                  Item class — extends pygame.sprite.Sprite
-mapVisualizer.py         Pygame top-down 2D map renderer + standalone debug viewer
-textVisualizer.py        ASCII terminal renderer, renders current floor as text
-ClaudeCodeVisualizer.py  Stateful single-keystroke visualizer designed for AI interaction
+map_visualizer.py         Pygame top-down 2D map renderer + standalone debug viewer
+text_visualizer.py        ASCII terminal renderer, renders current floor as text
+claude_code_visualizer.py  Stateful single-keystroke visualizer designed for AI interaction
 test_visualizer.py       Manual test script for the pygame debug viewer
 DebugMapLoader.dngn      Minimal two-floor dungeon used for parser debugging
 liveTestOne.dngn         Richer two-floor dungeon with stairs, enemies, items
-game_state.json          (git-ignored) Runtime state file for ClaudeCodeVisualizer
+game_state.json          (git-ignored) Runtime state file for claude_code_visualizer
 ROADMAP.md               Full feature roadmap (8 phases)
 ROADMAP_PRIORITY.md      Same features ordered by implementation sequence
 SECOND_ROADMAP.md        Dependency-ordered roadmap
@@ -31,7 +31,7 @@ SECOND_ROADMAP.md        Dependency-ordered roadmap
 
 ### Visualizer Modes
 
-The active visualizer is controlled by the `VISUALIZER` constant at the top of `wizDriveMain.py`:
+The active visualizer is controlled by the `VISUALIZER` constant at the top of `wiz_drive_main.py`:
 
 | Value | Mode | Notes |
 |-------|------|-------|
@@ -41,7 +41,7 @@ The active visualizer is controlled by the `VISUALIZER` constant at the top of `
 
 ### Pygame mode (VISUALIZER = 0)
 ```bash
-python wizDriveMain.py liveTestOne.dngn
+python wiz_drive_main.py liveTestOne.dngn
 # Controls: W forward, S backward, A turn left, D turn right, Q quit
 ```
 
@@ -50,32 +50,32 @@ This mode saves state to `game_state.json` between invocations so an AI can driv
 
 ```bash
 # Initialize / load a dungeon:
-python wizDriveMain.py liveTestOne.dngn
+python wiz_drive_main.py liveTestOne.dngn
 
 # Send one keystroke (w/s/a/d):
-python wizDriveMain.py w    # move forward
-python wizDriveMain.py a    # turn left
-python wizDriveMain.py d    # turn right
-python wizDriveMain.py s    # move backward
+python wiz_drive_main.py w    # move forward
+python wiz_drive_main.py a    # turn left
+python wiz_drive_main.py d    # turn right
+python wiz_drive_main.py s    # move backward
 
 # Re-render without moving:
-python wizDriveMain.py
+python wiz_drive_main.py
 ```
 
-`ClaudeCodeVisualizer.py` can also be run directly with the same interface:
+`claude_code_visualizer.py` can also be run directly with the same interface:
 ```bash
-python ClaudeCodeVisualizer.py liveTestOne.dngn
-python ClaudeCodeVisualizer.py w
+python claude_code_visualizer.py liveTestOne.dngn
+python claude_code_visualizer.py w
 ```
 
 ### Text visualizer (standalone, read-only)
 ```bash
-python textVisualizer.py liveTestOne.dngn
+python text_visualizer.py liveTestOne.dngn
 ```
 
 ### Map loader (standalone, for inspection/debugging)
 ```bash
-python mapLoader.py liveTestOne.dngn
+python map_loader.py liveTestOne.dngn
 ```
 
 ---
@@ -125,7 +125,7 @@ Object descriptor lines are optional and can appear in any order after the facin
 .dngn file
     │
     ▼
-mapLoader.loadMapFile()
+map_loader.load_map_file()
     │  returns (name, numFloors, [FloorData, ...])
     │
     ▼
@@ -134,12 +134,12 @@ FloorData = (grid, playerPos, facing, enemies, items, stairs)
     ├─▶ Player object  (player.py)
     │
     └─▶ Visualizer
-           ├── MapVisualizer.draw()      (pygame)
+           ├── map_visualizer.draw()      (pygame)
            ├── render_floor()            (text/ASCII)
-           └── ClaudeCodeVisualizer.run() (stateful JSON)
+           └── claude_code_visualizer.run() (stateful JSON)
 ```
 
-### `FloorData` type alias (`mapLoader.py`)
+### `FloorData` type alias (`map_loader.py`)
 ```python
 FloorData = tuple[
     List[List[int]],          # grid[y][x]: 0=open, 1=wall
@@ -160,26 +160,26 @@ FloorData = tuple[
 
 **`Enemy`** (`enemy.py`) — extends `pygame.sprite.Sprite`  
 Rendered as a red 32×32 surface. Fields: `name`, `hp`, `attack`, `speed`, `grid_x`, `grid_y`.  
-Stats for named enemies come from `enemyTypes.ENEMY_TYPES`; unknown names fall back to `{hp:10, attack:3, speed:1}`.
+Stats for named enemies come from `enemy_types.ENEMY_TYPES`; unknown names fall back to `{hp:10, attack:3, speed:1}`.
 
 **`Item`** (`item.py`) — extends `pygame.sprite.Sprite`  
 Rendered as a gold/yellow 32×32 surface. Fields: `name`, `value`, `description`, `grid_x`, `grid_y`.
 
-### `mapLoader.py` Public API
+### `map_loader.py` Public API
 
 | Function | Purpose |
 |----------|---------|
-| `loadMapFile(path)` | Load from a `.dngn` file on disk |
-| `loadMapText(text)` | Load from a string (same format) |
-| `validateMapFile(path)` | Returns `(is_valid, [errors])` without loading for use |
+| `load_map_file(path)` | Load from a `.dngn` file on disk |
+| `load_map_text(text)` | Load from a string (same format) |
+| `validate_map_file(path)` | Returns `(is_valid, [errors])` without loading for use |
 
-Set `mapLoader.debug = False` (as done in all entry-point files) to suppress verbose `[DEBUG]` output.
+Set `map_loader.debug = False` (as done in all entry-point files) to suppress verbose `[DEBUG]` output.
 
 ---
 
 ## Combat (ClaudeCode mode)
 
-When the player moves (`w`/`s`) into a tile occupied by an enemy, `ClaudeCodeVisualizer._do_combat()` is triggered instead of movement:
+When the player moves (`w`/`s`) into a tile occupied by an enemy, `claude_code_visualizer._do_combat()` is triggered instead of movement:
 
 - Player deals `PLAYER_ATTACK = 5` damage to the enemy.
 - If the enemy survives, it counter-attacks for `enemy.attack` damage.
@@ -197,10 +197,10 @@ Stepping onto a `STAIRS` tile (after a successful move) advances `floor_index` a
 
 - **Python 3.11+**, no virtual-environment setup checked in; `pygame` is the only external dependency.
 - **Type hints** used throughout. Use `from __future__ import annotations` for forward references.
-- **Naming**: `snake_case` for functions/variables, `PascalCase` for classes, `_leading_underscore` for module-private functions.
+- **Naming**: `snake_case` for classes, modules, functions, and all variables, with `_leading_underscore` for module-private functions.
 - **Error messages** use `!r` (repr) formatting for untrusted/user-supplied values.
-- **No comments** on obvious code. Comments appear only for non-obvious constraints (e.g. "pygame must be initialized before loadMapFile").
-- **`mapLoader.debug`** is a module-level bool. Set it to `False` in every entry-point file before calling any loader function. Never leave it `True` in committed code that runs as part of the game.
+- **No comments** on obvious code. Comments appear only for non-obvious constraints (e.g. "pygame must be initialized before load_map_file").
+- **`map_loader.debug`** is a module-level bool. Set it to `False` in every entry-point file before calling any loader function. Never leave it `True` in committed code that runs as part of the game.
 - `Enemy` and `Item` call `pygame.Surface(...)` in `__init__`, so `pygame.init()` **must** be called before any map is loaded.
 - `FloorData` tuples are positional; always unpack with named variables: `grid, start_pos, start_facing, enemies, items, stairs = floor`.
 
@@ -218,7 +218,7 @@ git push -u origin claude/claude-md-docs-wwQy2
 ## Next Priorities (from SECOND_ROADMAP.md)
 
 1. Multiple enemy types (distinct visuals/behaviour)
-2. Stairs/portals for level transitions *(partially implemented in ClaudeCodeVisualizer)*
+2. Stairs/portals for level transitions *(partially implemented in claude_code_visualizer)*
 3. Movement collision validation surfaced in all visualizers
 4. Basic 3D perspective / first-person wall rendering (the core Wizardry feel)
 5. Wall textures and UI overlay (HUD)
@@ -231,18 +231,18 @@ There is no automated test suite yet. Manual testing steps:
 
 ```bash
 # Validate a dungeon file:
-python mapLoader.py DebugMapLoader.dngn
+python map_loader.py DebugMapLoader.dngn
 
 # Render a dungeon as ASCII:
-python textVisualizer.py liveTestOne.dngn
+python text_visualizer.py liveTestOne.dngn
 
 # Open the pygame debug viewer (requires a display):
 python test_visualizer.py liveTestOne.dngn
 
 # Drive the game via ClaudeCode visualizer:
-python ClaudeCodeVisualizer.py liveTestOne.dngn
-python ClaudeCodeVisualizer.py w
-python ClaudeCodeVisualizer.py a
+python claude_code_visualizer.py liveTestOne.dngn
+python claude_code_visualizer.py w
+python claude_code_visualizer.py a
 ```
 
-When adding new `.dngn` parser features, test both `loadMapFile` and `validateMapFile` paths, and exercise `loadMapText` for in-memory cases.
+When adding new `.dngn` parser features, test both `load_map_file` and `validate_map_file` paths, and exercise `load_map_text` for in-memory cases.

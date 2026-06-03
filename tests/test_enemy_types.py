@@ -1,5 +1,5 @@
 import pytest
-from enemyTypes import get_stats, ENEMY_TYPES
+from enemy_types import get_stats, ENEMY_TYPES
 
 
 KNOWN_ENEMIES = [

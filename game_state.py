@@ -1,9 +1,9 @@
 import json
 import os
 
-import mapLoader
-mapLoader.debug = False
-from mapLoader import loadMapFile
+import map_loader
+map_loader.debug = False
+from map_loader import load_map_file
 from player import Player
 from enemy import Enemy
 
@@ -48,7 +48,7 @@ class GameState:
         # Reconstructs a GameState by loading the JSON save file and re-parsing its dungeon.
         with open(STATE_FILE) as f:
             data = json.load(f)
-        _, _, floors = loadMapFile(data["dungeon"])
+        _, _, floors = load_map_file(data["dungeon"])
         player = Player("Hero", hp=data["hp"], mp=data["mp"])
         player.location = (data["x"], data["y"])
         player.facing = data["facing"]

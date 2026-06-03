@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pygame
 
-from mapLoader import FloorData
+from map_loader import floor_data
 from player import Player
 
 WALL_COLOR   = (60,  60,  60)
@@ -20,7 +20,7 @@ _FACING_DELTA: dict[str, tuple[int, int]] = {
 }
 
 
-class MapVisualizer:
+class map_visualizer:
     def __init__(
         self,
         surface: pygame.Surface,
@@ -39,8 +39,8 @@ class MapVisualizer:
             (grid_size - 1 - grid_y) * self.tile_size + oy,
         )
 
-    def draw(self, floor_data: FloorData, player: Player | None = None) -> None:
-        grid, player_pos, facing, enemies, items = floor_data
+    def draw(self, data_for_floor: floor_data, player: Player | None = None) -> None:
+        grid, player_pos, facing, enemies, items, stairs = data_for_floor
         grid_size = len(grid)
         ts = self.tile_size
 
@@ -84,15 +84,15 @@ class MapVisualizer:
         )
 
 
-def run_debug_viewer(floor_data: FloorData, player: Player | None = None) -> None:
+def run_debug_viewer(data_for_floor: floor_data, player: Player | None = None) -> None:
     """Open a standalone pygame window showing the floor. Close with the window button or Q."""
     pygame.init()
-    grid_size = len(floor_data[0])
+    grid_size = len(data_for_floor[0])
     tile_size = 32
     screen = pygame.display.set_mode((grid_size * tile_size, grid_size * tile_size))
     pygame.display.set_caption("WizDrive — Debug Map Viewer")
 
-    visualizer = MapVisualizer(screen, tile_size=tile_size)
+    visualizer = map_visualizer(screen, tile_size=tile_size)
     clock = pygame.time.Clock()
 
     running = True
@@ -104,7 +104,7 @@ def run_debug_viewer(floor_data: FloorData, player: Player | None = None) -> Non
                 running = False
 
         screen.fill((0, 0, 0))
-        visualizer.draw(floor_data, player)
+        visualizer.draw(data_for_floor, player)
         pygame.display.flip()
         clock.tick(60)
 

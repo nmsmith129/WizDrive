@@ -1,7 +1,7 @@
 import json
 import pytest
-import gameState as gs
-from gameState import GameState
+import game_state as gs
+from game_state import GameState
 from player import Player
 from enemy import Enemy
 

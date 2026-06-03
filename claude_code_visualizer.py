@@ -4,17 +4,17 @@ import os
 import pygame
 pygame.init()
 
-import mapLoader
-mapLoader.debug = False
-from mapLoader import loadMapFile
-from gameState import GameState, STATE_FILE
-from textVisualizer import render_floor
+import map_loader
+map_loader.debug = False
+from map_loader import load_map_file
+from game_state import GameState, STATE_FILE
+from text_visualizer import render_floor
 
 
 def run(dungeon_path=None, key=None):
     # Loads or resumes a dungeon run, applies an optional keypress, then renders the current floor.
     if dungeon_path:
-        _, _, floors = loadMapFile(dungeon_path)
+        _, _, floors = load_map_file(dungeon_path)
         state = GameState.new(dungeon_path, floors)
         state.save()
     else:
@@ -37,11 +37,11 @@ if __name__ == "__main__":
         run(dungeon_path=arg)
     elif arg:
         if not os.path.exists(STATE_FILE):
-            print("No saved state. Run with a .dngn file first: python ClaudeCodeVisualizer.py <file.dngn>")
+            print("No saved state. Run with a .dngn file first: python claude_code_visualizer.py <file.dngn>")
             sys.exit(1)
         run(key=arg)
     else:
         if not os.path.exists(STATE_FILE):
-            print("No saved state. Run with a .dngn file first: python ClaudeCodeVisualizer.py <file.dngn>")
+            print("No saved state. Run with a .dngn file first: python claude_code_visualizer.py <file.dngn>")
             sys.exit(1)
         run()
