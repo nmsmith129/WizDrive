@@ -1,7 +1,8 @@
 import os
 
-# Must be set at module level, before any import of pygame. claude_code_visualizer
-# calls pygame.init() at import time, so the dummy driver must be in place first.
+# Must be set at module level, before any import of pygame. Several modules call
+# pygame.init() / create Surfaces at import time, so the dummy driver must be in
+# place first to allow headless test runs.
 os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
 os.environ.setdefault("SDL_AUDIODRIVER", "dummy")
 

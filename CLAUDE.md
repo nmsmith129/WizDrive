@@ -15,11 +15,11 @@ enemy_types.py            ENEMY_TYPES lookup table + get_stats() helper
 item.py                  Item class — extends pygame.sprite.Sprite
 map_visualizer.py         Pygame top-down 2D map renderer + standalone debug viewer
 text_visualizer.py        ASCII terminal renderer, renders current floor as text
-claude_code_visualizer.py  Stateful single-keystroke visualizer designed for AI interaction
+game_state.py            GameState: runtime state, movement/combat dispatch, JSON save/load
 test_visualizer.py       Manual test script for the pygame debug viewer
 DebugMapLoader.dngn      Minimal two-floor dungeon used for parser debugging
 liveTestOne.dngn         Richer two-floor dungeon with stairs, enemies, items
-game_state.json          (git-ignored) Runtime state file for claude_code_visualizer
+game_state.json          (git-ignored) Runtime save file written by GameState.save()
 ROADMAP.md               Full feature roadmap (8 phases)
 ROADMAP_PRIORITY.md      Same features ordered by implementation sequence
 SECOND_ROADMAP.md        Dependency-ordered roadmap
@@ -35,37 +35,19 @@ The active visualizer is controlled by the `VISUALIZER` constant at the top of `
 
 | Value | Mode | Notes |
 |-------|------|-------|
-| `0` | Pygame top-down | Real-time, requires a display (WASD + Q) |
+| `0` | Pygame top-down (default) | Real-time, requires a display (WASD + Q) |
 | `1` | Text/terminal | Real-time keypresses via `msvcrt` (Windows only) |
-| `2` | ClaudeCode (default) | Stateful, single-keystroke arg — designed for AI use |
 
-### Pygame mode (VISUALIZER = 0)
+### Pygame mode (VISUALIZER = 0, default)
 ```bash
 python wiz_drive_main.py liveTestOne.dngn
 # Controls: W forward, S backward, A turn left, D turn right, Q quit
 ```
 
-### ClaudeCode mode (VISUALIZER = 2, default)
-This mode saves state to `game_state.json` between invocations so an AI can drive the game one keypress at a time.
-
+### Text mode (VISUALIZER = 1)
 ```bash
-# Initialize / load a dungeon:
 python wiz_drive_main.py liveTestOne.dngn
-
-# Send one keystroke (w/s/a/d):
-python wiz_drive_main.py w    # move forward
-python wiz_drive_main.py a    # turn left
-python wiz_drive_main.py d    # turn right
-python wiz_drive_main.py s    # move backward
-
-# Re-render without moving:
-python wiz_drive_main.py
-```
-
-`claude_code_visualizer.py` can also be run directly with the same interface:
-```bash
-python claude_code_visualizer.py liveTestOne.dngn
-python claude_code_visualizer.py w
+# Real-time keypresses (Windows-only msvcrt): W/S/A/D to move, Q to quit
 ```
 
 ### Text visualizer (standalone, read-only)
@@ -133,10 +115,11 @@ FloorData = (grid, playerPos, facing, enemies, items, stairs)
     │
     ├─▶ Player object  (player.py)
     │
+    ├─▶ GameState  (game_state.py)   movement / combat / floor dispatch via apply_key()
+    │
     └─▶ Visualizer
            ├── MapVisualizer.draw()      (pygame)
-           ├── render_floor()            (text/ASCII)
-           └── claude_code_visualizer.run() (stateful JSON)
+           └── render_floor()            (text/ASCII)
 ```
 
 ### `FloorData` type alias (`map_loader.py`)
@@ -177,19 +160,19 @@ Set `map_loader.debug = False` (as done in all entry-point files) to suppress ve
 
 ---
 
-## Combat (ClaudeCode mode)
+## Combat
 
-When the player moves (`w`/`s`) into a tile occupied by an enemy, `claude_code_visualizer._do_combat()` is triggered instead of movement:
+Combat is dispatched by `GameState.apply_key()` (`game_state.py`): when the player moves (`w`/`s`) into a tile occupied by an enemy, `Player.attack(enemy)` (`player.py`) runs instead of movement:
 
 - Player deals `PLAYER_ATTACK = 5` damage to the enemy.
+- On a kill: the enemy is removed from the enemy list, its `xp` is awarded to the player, and the player levels up once per 10 XP.
 - If the enemy survives, it counter-attacks for `enemy.attack` damage.
-- Defeated enemies are removed from the enemy list and persisted to state.
 
-Player death is printed but does not halt the game loop yet.
+`Player.attack()` returns `True` when the enemy is defeated. Player death is printed but does not halt the game loop yet.
 
 ## Floor Transitions
 
-Stepping onto a `STAIRS` tile (after a successful move) advances `floor_index` and resets the player to the new floor's start position and facing. If no next floor exists, a message is printed.
+Also handled in `GameState.apply_key()`: stepping onto a `STAIRS` tile (after a successful move) advances `floor_index` and resets the player to the new floor's start position and facing. If no next floor exists, a message is printed.
 
 ---
 
@@ -218,7 +201,7 @@ git push -u origin claude/claude-md-docs-wwQy2
 ## Next Priorities (from SECOND_ROADMAP.md)
 
 1. Multiple enemy types (distinct visuals/behaviour)
-2. Stairs/portals for level transitions *(partially implemented in claude_code_visualizer)*
+2. Stairs/portals for level transitions *(partially implemented in GameState.apply_key)*
 3. Movement collision validation surfaced in all visualizers
 4. Basic 3D perspective / first-person wall rendering (the core Wizardry feel)
 5. Wall textures and UI overlay (HUD)
@@ -238,11 +221,6 @@ python text_visualizer.py liveTestOne.dngn
 
 # Open the pygame debug viewer (requires a display):
 python test_visualizer.py liveTestOne.dngn
-
-# Drive the game via ClaudeCode visualizer:
-python claude_code_visualizer.py liveTestOne.dngn
-python claude_code_visualizer.py w
-python claude_code_visualizer.py a
 ```
 
 When adding new `.dngn` parser features, test both `load_map_file` and `validate_map_file` paths, and exercise `load_map_text` for in-memory cases.

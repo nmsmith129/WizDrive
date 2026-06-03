@@ -78,13 +78,6 @@ def run_text(state):
 
 
 if __name__ == "__main__":
-    if VISUALIZER == 2:
-        claude_code_visualizer.run(
-            dungeon_path=sys.argv[1] if len(sys.argv) > 1 and sys.argv[1].endswith(".dngn") else None,
-            key=sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].endswith(".dngn") else None,
-        )
-        sys.exit(0)
-
     if len(sys.argv) < 2:
         print("Usage: python wiz_drive_main.py <file.dngn>")
         sys.exit(1)
