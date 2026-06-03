@@ -210,7 +210,29 @@ git push -u origin claude/claude-md-docs-wwQy2
 
 ## Testing
 
-There is no automated test suite yet. Manual testing steps:
+The project has a `pytest` suite under `tests/`. Run it with:
+
+```bash
+python -m pytest -q
+```
+
+`tests/conftest.py` sets the dummy SDL video/audio drivers automatically, so the
+suite runs headless (no display needed) even though `enemy.py`/`item.py` create
+pygame Surfaces. Current coverage by file:
+
+| Test file | Covers |
+|-----------|--------|
+| `test_map_loader.py` | `load_map_file` / `load_map_text`, grid reversal, enemy/item/stairs/player parsing, multi-floor |
+| `test_validate_map.py` | `validate_map_file` valid + error paths |
+| `test_player.py` | `Player` init, movement, turning |
+| `test_combat.py` | `Player.attack`, wall detection |
+| `test_state.py` | `GameState` save/load round-trip |
+| `test_enemy_types.py` | `ENEMY_TYPES` / `get_stats` |
+| `test_text_visualizer.py` | ASCII rendering, symbol priority, facing line |
+
+When adding new `.dngn` parser features, test both `load_map_file` and `validate_map_file` paths, and exercise `load_map_text` for in-memory cases.
+
+### Manual checks
 
 ```bash
 # Validate a dungeon file:
@@ -222,5 +244,3 @@ python text_visualizer.py liveTestOne.dngn
 # Open the pygame debug viewer (requires a display):
 python test_visualizer.py liveTestOne.dngn
 ```
-
-When adding new `.dngn` parser features, test both `load_map_file` and `validate_map_file` paths, and exercise `load_map_text` for in-memory cases.
