@@ -10,8 +10,7 @@ WizDrive is a Python/Pygame dungeon crawler inspired by Wizardry. The project is
 wiz_drive_main.py          Entry point; selects visualizer mode, runs the game loop
 map_loader.py             .dngn file parser, validator, and loader
 player.py                Player class (position, facing, movement, stubs for combat/spells)
-enemy.py                 Enemy class — extends pygame.sprite.Sprite
-enemy_types.py            ENEMY_TYPES lookup table + get_stats() helper
+enemy.py                 Enemy class (extends pygame.sprite.Sprite) + ENEMY_TYPES table + get_stats()
 item.py                  Item class — extends pygame.sprite.Sprite
 map_visualizer.py         Pygame top-down 2D map renderer + standalone debug viewer
 text_visualizer.py        ASCII terminal renderer, renders current floor as text
@@ -145,7 +144,7 @@ Attributes (defaults): `attack: float = 0.5` (hit chance), `strength: int = 1` (
 
 **`Enemy`** (`enemy.py`) — extends `pygame.sprite.Sprite`  
 Rendered as a red 32×32 surface. Fields: `name`, `hp`, `attack`, `speed`, `grid_x`, `grid_y`.  
-Stats for named enemies come from `enemy_types.ENEMY_TYPES`; unknown names fall back to `{hp:10, attack:3, speed:1}`.
+Stats for named enemies come from `enemy.ENEMY_TYPES`; unknown names fall back to `{hp:10, attack:3, speed:1}`.
 
 **`Item`** (`item.py`) — extends `pygame.sprite.Sprite`  
 Rendered as a gold/yellow 32×32 surface. Fields: `name`, `value`, `description`, `grid_x`, `grid_y`.

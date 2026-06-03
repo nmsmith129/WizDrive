@@ -39,8 +39,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import List, Tuple
 
-from enemy import Enemy
-from enemy_types import get_stats
+from enemy import Enemy, get_stats
 from item import Item
 
 debug = True  # set to True to enable diagnostic output

@@ -22,12 +22,12 @@ Items are ordered so that every feature appears after all features it depends on
 - [x] Item placement on maps (chests, torches)
 
 ### Player Attributes & Progression
-- [ ] Player attributes (health, mana, experience, level)
+- [d] Player attributes (health, mana, experience, level)
 - [x] Health/Hit Points (HP)
 - [x] Mana/Spell Points (MP)
-- [ ] Experience points (XP)
-- [ ] Level system
-- [ ] Attribute system (Strength, Intelligence, Dexterity, Constitution, Wisdom, Charisma)
+- [x] Experience points (XP)
+- [d] Level system
+- [d] Attribute system (Strength, Intelligence, Dexterity, Constitution, Wisdom, Charisma)
 - [ ] Skill system
 - [ ] Player inventory system
 
