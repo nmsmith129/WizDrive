@@ -1,21 +1,45 @@
 # WizDrive — CLAUDE.md
 
-WizDrive is a Python/Pygame dungeon crawler inspired by Wizardry. The project is in active early development: the core map system, entity classes, and multiple visualizer backends are complete; first-person 3D rendering and most gameplay mechanics are still on the roadmap.
+> **Memory instruction:** This project lives on a remote server shared across multiple clients. Do not write project memories to the local `~/.claude/` memory store. Instead, update this file directly with any new context worth preserving across sessions.
+>
+> Additionally, at the start of your first response in any new session, check whether your local project memory for this project contains a `feedback-memory-location.md` file. If it does not exist, create it with the following content:
+>
+> ```
+> ---
+> name: feedback-memory-location
+> description: New memories for WizDrive must go into CLAUDE.md, not local storage
+> metadata:
+>   type: feedback
+> ---
+>
+> For this project, write all new persistent context directly into `CLAUDE.md` at the project root — do not use the local `~/.claude/projects/` memory store.
+>
+> **Why:** The project lives on a remote server shared across multiple client machines. Local memory is machine-specific. CLAUDE.md is on the remote share and is loaded automatically by Claude Code everywhere.
+>
+> **How to apply:** Any time you would normally write a memory file, edit CLAUDE.md instead.
+> ```
+>
+> Also add a pointer in the same directory's `MEMORY.md`: `- [Memory Location](feedback-memory-location.md) — New memories go into CLAUDE.md, not local storage`
+
+WizDrive is a Python/Pygame dungeon crawler inspired by Wizardry. The project is in active early development: the core map system, entity classes, combat, XP/leveling, and player attribute systems are complete; first-person 3D rendering and most gameplay mechanics are still on the roadmap.
 
 ---
 
 ## Repository Layout
 
 ```
-wiz_drive_main.py          Entry point; selects visualizer mode, runs the game loop
-map_loader.py             .dngn file parser, validator, and loader
-player.py                Player class (position, facing, movement, stubs for combat/spells)
-enemy.py                 Enemy class (extends pygame.sprite.Sprite) + ENEMY_TYPES table + get_stats()
-item.py                  Item class (extends pygame.sprite.Sprite) + ITEM_TYPES table + get_item_stats()
-map_visualizer.py         Pygame top-down 2D map renderer + standalone debug viewer
-text_visualizer.py        ASCII terminal renderer, renders current floor as text
-game_state.py            GameState: runtime state, movement/combat dispatch, JSON save/load
+wizDriveMain.py          Entry point; selects visualizer mode, runs the game loop
+gameState.py             GameState class: all runtime state, combat logic, save/load
+mapLoader.py             .dngn file parser, validator, and loader
+player.py                Player class (position, facing, movement, attributes, XP/level)
+enemy.py                 Enemy class — extends pygame.sprite.Sprite
+enemyTypes.py            ENEMY_TYPES lookup table + get_stats() helper
+item.py                  Item class — extends pygame.sprite.Sprite
+mapVisualizer.py         Pygame top-down 2D map renderer + standalone debug viewer
+textVisualizer.py        ASCII terminal renderer, renders current floor as text
+ClaudeCodeVisualizer.py  Stateful single-keystroke visualizer designed for AI interaction
 test_visualizer.py       Manual test script for the pygame debug viewer
+tests/                   Automated test suite (pytest, 146 tests)
 DebugMapLoader.dngn      Minimal two-floor dungeon used for parser debugging
 liveTestOne.dngn         Richer two-floor dungeon with stairs, enemies, items
 game_state.json          (git-ignored) Runtime save file written by GameState.save()
@@ -90,6 +114,8 @@ Each floor block (separated from others by blank lines):
 
 Object descriptor lines are optional and can appear in any order after the facing line. Every x/y coordinate must be within bounds and on an open tile (`0`).
 
+XP for explicit-stat enemies is always looked up from `ENEMY_TYPES` (xp is not part of the map format).
+
 ### Coordinate Convention
 
 - **File order**: rows are written top-to-bottom (row 0 = top of the visual map).
@@ -137,21 +163,24 @@ FloorData = tuple[
 ### Key Classes
 
 **`Player`** (`player.py`) — no pygame dependency  
-`location: (x, y)`, `facing: str`  
-Attributes (defaults): `attack: float = 0.5` (hit chance), `strength: int = 1` (base damage), `defense: int = 1` (damage reduction), `max_hp: int = 10`, `intelligence: int = 1` (spell effectiveness, unused until spells exist), `mana: int = 1` (max mana). `weapon = None` is an equipment stub exposing `.strength` once filled.  
-`hp`/`mp` are the *current* HP/mana; they start full (`max_hp`/`mana`) unless passed explicitly.  
+`location: (x, y)`, `facing: str`, `hp: int`, `mp: int`, `xp: int`, `level: int`  
+Attributes: `attack: float`, `strength: int`, `defense: int`, `max_hp: int`, `intelligence: int`, `mana: int`  
 `move("forward"|"backward")`, `turn("left"|"right")`, `strike(enemy)`  
-`cast_spell()`, `use_item()` are placeholder stubs.
+`cast_spell()`, `use_item()` are placeholder stubs.  
+`self.weapon = None` is an equipment stub; any object with `.strength` works once equipment exists.
 
 **`Enemy`** (`enemy.py`) — extends `pygame.sprite.Sprite`  
-Rendered as a red 32×32 surface. Fields: `name`, `hp`, `attack`, `speed`, `grid_x`, `grid_y`.  
-Stats for named enemies come from `enemy.ENEMY_TYPES`; unknown names fall back to `{hp:10, attack:3, speed:1}`.
+Rendered as a red 32×32 surface. Fields: `name`, `hp`, `attack`, `speed`, `grid_x`, `grid_y`, `xp`.  
+Stats for named enemies come from `enemyTypes.ENEMY_TYPES`; unknown names fall back to `{hp:10, attack:3, speed:1, xp:0}`.
 
 **`Item`** (`item.py`) — extends `pygame.sprite.Sprite`  
 Rendered as a gold/yellow 32×32 surface. Fields: `name`, `value`, `description`, `category` (`weapon`/`armor`/`consumable`/`treasure`/`misc`), `effect` (category-specific bonus dict, e.g. `{"strength": 4}`), `grid_x`, `grid_y`.  
 Named items can pull `value`/`description`/`category`/`effect` from `item.ITEM_TYPES` via `get_item_stats()`; unknown names fall back to `{value:1, category:"misc", description:""}`.
 
-### `map_loader.py` Public API
+**`GameState`** (`gameState.py`)  
+All runtime state: current floor, player, enemies, items. Handles combat logic, floor transitions, save/load to `game_state.json`.
+
+### `mapLoader.py` Public API
 
 | Function | Purpose |
 |----------|---------|
@@ -165,13 +194,59 @@ Set `map_loader.debug = False` (as done in all entry-point files) to suppress ve
 
 ## Combat
 
-Combat is dispatched by `GameState.apply_key()` (`game_state.py`): when the player moves (`w`/`s`) into a tile occupied by an enemy, `Player.strike(enemy)` (`player.py`) runs instead of movement:
+When the player moves (`w`/`s`) into a tile occupied by an enemy, `GameState._do_combat()` triggers.
 
-- `strike()` rolls `random.random() < player.attack` to hit. On a hit the player deals `strength + weapon.strength` damage (weapon strength is 0 while `weapon is None`).
-- On a kill: the enemy is removed from the enemy list, its `xp` is awarded to the player, and the player levels up once per 10 XP.
-- Whether the strike missed or the enemy merely survived, the enemy counter-attacks for `max(1, enemy.attack - player.defense)` (always at least 1).
+### Strike mechanic (`Player.strike(enemy)`)
+- Hit roll: `random.random() < self.attack` (default 50% chance)
+- On hit: damage = `self.strength + self.weapon.strength` (weapon is `None` stub, treated as 0)
+- On miss: no damage dealt
+- Either way, the enemy counter-attacks: `max(1, enemy.attack - self.defense)` damage to player
+- Returns `True` on kill
+
+### XP & Leveling
+- On kill: player earns `enemy.xp` XP. Every 10 XP = 1 level.
+- Level-up logic: `levels_gained = (xp_after // 10) - (xp_before // 10)` — handles multi-level jumps.
+- `enemy.xp` is an instance attribute set at construction from `ENEMY_TYPES`; it is not re-looked up at combat time.
+
+### XP values by enemy type
+| Enemy | XP | Enemy | XP |
+|-------|----|-------|----|
+| Rat | 5 | Troll | 30 |
+| Spider | 10 | Dark Mage | 35 |
+| Goblin | 15 | Orc | 40 |
+| Skeleton | 20 | Wraith | 45 |
+| Zombie | 25 | Vampire | 50 |
+| | | Dragon | 100 |
 
 `Player.strike()` returns `True` when the enemy is defeated. Player death is printed but does not halt the game loop yet. Combat is now probabilistic, so tests monkeypatch `player.random.random` for determinism.
+
+---
+
+## Player Attribute System
+
+Six custom attributes on `Player` (not D&D stats):
+
+| Field | Default | Role |
+|-------|---------|------|
+| `attack` | `0.5` | hit chance (`random.random() < self.attack`) |
+| `strength` | `1` | base damage per hit |
+| `defense` | `1` | damage reduction (`max(1, enemy.attack - defense)`) |
+| `max_hp` | `10` | maximum HP; `self.hp` starts full |
+| `intelligence` | `1` | spell effectiveness (stub — spells not yet implemented) |
+| `mana` | `1` | maximum mana; `self.mp` starts full |
+
+`Player.__init__` signature: `Player(name, hp=None, mp=None, attack=0.5, strength=1, defense=1, max_hp=10, intelligence=1, mana=1)`. `hp`/`mp` default to `max_hp`/`mana` when omitted.
+
+Enemies deliberately have no attributes — they keep their `ENEMY_TYPES` stat block (`hp`, `attack`, `speed`). Enemy miss chance is planned but not yet implemented.
+
+---
+
+## Persistence (`gameState.py`)
+
+`GameState.save()` writes all player fields to `game_state.json`, including `xp`, `level`, and all six attributes.  
+`GameState.from_save()` restores each with `.get(field, default)` fallbacks so pre-attribute and pre-XP saves still load correctly.
+
+---
 
 ## Floor Transitions
 
@@ -183,61 +258,28 @@ Also handled in `GameState.apply_key()`: stepping onto a `STAIRS` tile (after a 
 
 - **Python 3.11+**, no virtual-environment setup checked in; `pygame` is the only external dependency.
 - **Type hints** used throughout. Use `from __future__ import annotations` for forward references.
-- **Naming**: `snake_case` for modules, functions, and variables; `PascalCase` for classes; `UPPER_SNAKE_CASE` for constants. `_leading_underscore` for module-private functions.
+- **Naming**: `snake_case` for modules/functions/variables, `PascalCase` for classes, `UPPER_SNAKE_CASE` for constants, `_leading_underscore` for module-private functions. The module *file* stays `snake_case` even when it contains a `PascalCase` class (e.g. `map_visualizer.py` → `class MapVisualizer`).
+- **Comments**: single-line `# comment` as the first line of a method body for non-obvious logic. Not docstrings. No comments on obvious code.
 - **Error messages** use `!r` (repr) formatting for untrusted/user-supplied values.
-- **No comments** on obvious code. Comments appear only for non-obvious constraints (e.g. "pygame must be initialized before load_map_file").
-- **`map_loader.debug`** is a module-level bool. Set it to `False` in every entry-point file before calling any loader function. Never leave it `True` in committed code that runs as part of the game.
+- **`mapLoader.debug`** is a module-level bool. Set it to `False` in every entry-point file before calling any loader function. Never leave it `True` in committed code that runs as part of the game.
 - `Enemy` and `Item` call `pygame.Surface(...)` in `__init__`, so `pygame.init()` **must** be called before any map is loaded.
 - `FloorData` tuples are positional; always unpack with named variables: `grid, start_pos, start_facing, enemies, items, stairs = floor`.
 
 ---
 
-## Development Branch
-
-All feature work goes on branch **`claude/claude-md-docs-wwQy2`**. Push with:
-```bash
-git push -u origin claude/claude-md-docs-wwQy2
-```
-
----
-
-## Next Priorities (from SECOND_ROADMAP.md)
-
-1. Multiple enemy types (distinct visuals/behaviour)
-2. Stairs/portals for level transitions *(partially implemented in GameState.apply_key)*
-3. Movement collision validation surfaced in all visualizers
-4. Basic 3D perspective / first-person wall rendering (the core Wizardry feel)
-5. Wall textures and UI overlay (HUD)
-
----
-
 ## Testing
 
-The project has a `pytest` suite under `tests/`. Run it with:
-
+Run the full test suite with:
 ```bash
-python -m pytest -q
+python -m pytest tests/ -v
 ```
 
-`tests/conftest.py` sets the dummy SDL video/audio drivers automatically, so the
-suite runs headless (no display needed) even though `enemy.py`/`item.py` create
-pygame Surfaces. Current coverage by file:
+146 tests across: `test_combat`, `test_enemy_types`, `test_map_loader`, `test_player`, `test_state`, `test_text_visualizer`, `test_validate_map`.
 
-| Test file | Covers |
-|-----------|--------|
-| `test_map_loader.py` | `load_map_file` / `load_map_text`, grid reversal, enemy/item/stairs/player parsing, multi-floor |
-| `test_validate_map.py` | `validate_map_file` valid + error paths |
-| `test_player.py` | `Player` init, attribute defaults, movement, turning |
-| `test_combat.py` | `Player.strike` (hit/miss rolls, weapon damage, counter-attacks), wall detection |
-| `test_state.py` | `GameState` save/load round-trip |
-| `test_enemy_types.py` | `ENEMY_TYPES` / `get_stats` |
-| `test_item_types.py` | `ITEM_TYPES` / `get_item_stats`, category/effect entries |
-| `test_text_visualizer.py` | ASCII rendering, symbol priority, facing line |
+Tests import from `gameState` and `player` directly — not from `ClaudeCodeVisualizer`.  
+Combat tests (`test_combat.py`) monkeypatch `player.random.random` via `always_hit`/`always_miss` fixtures for determinism.
 
-When adding new `.dngn` parser features, test both `load_map_file` and `validate_map_file` paths, and exercise `load_map_text` for in-memory cases.
-
-### Manual checks
-
+Manual testing:
 ```bash
 # Validate a dungeon file:
 python map_loader.py DebugMapLoader.dngn
@@ -248,3 +290,15 @@ python text_visualizer.py liveTestOne.dngn
 # Open the pygame debug viewer (requires a display):
 python test_visualizer.py liveTestOne.dngn
 ```
+
+When adding new `.dngn` parser features, test both `loadMapFile` and `validateMapFile` paths, and exercise `loadMapText` for in-memory cases.
+
+---
+
+## Next Priorities (from SECOND_ROADMAP.md)
+
+1. Multiple enemy types (distinct visuals/behaviour)
+2. Stairs/portals for level transitions *(partially implemented)*
+3. Movement collision validation surfaced in all visualizers
+4. Basic 3D perspective / first-person wall rendering (the core Wizardry feel)
+5. Wall textures and UI overlay (HUD)
