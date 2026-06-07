@@ -11,7 +11,7 @@ description: "Task list template for feature implementation"
 
 **Tests**: Per WizDrive Constitution Principle I (Test-First, NON-NEGOTIABLE), test tasks are REQUIRED for new behaviour — include coverage for parser paths, combat/XP/state changes, and deterministic handling of probabilistic logic. (The Spec Kit default treats tests as optional; this project overrides that.)
 
-**Agent separation (Constitution Principle VI)**: ALL implementation and testing MUST be delegated to sub-agents — the orchestrator only plans, delegates, and reviews. Test tasks go to a dedicated **testing sub-agent**, implementation tasks to a separate **implementation sub-agent**, and the implementer never writes or edits its own tests. **Every implementation and testing sub-agent MUST run the Sonnet model.** Test tasks below are tagged `[TEST-AGENT]` and implementation tasks `[IMPL-AGENT]` to make the assignment explicit.
+**Agent separation (Constitution Principle VI)**: ALL implementation and testing MUST be delegated to sub-agents — the orchestrator only plans, delegates, and reviews. Test tasks go to a dedicated **testing sub-agent**, implementation tasks to a separate **implementation sub-agent**, and the implementer never writes or edits its own tests. **Every implementation and testing sub-agent MUST run the Sonnet model by default** — Opus may be used for a specific task only with explicit prior user permission, recorded in the plan's Complexity Tracking. Test tasks below are tagged `[TEST-AGENT]` and implementation tasks `[IMPL-AGENT]` to make the assignment explicit.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 

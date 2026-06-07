@@ -53,10 +53,14 @@ Mark each gate PASS / FAIL (justify any FAIL in Complexity Tracking):
 - [ ] **IV. Consistent Code Style**: Python 3.11+, type hints, snake_case/PascalCase/UPPER_SNAKE
       naming, single-line first-line comments, `!r` for untrusted values.
 - [ ] **V. Backward-Compatible Persistence**: Save/load tolerates older `game_state.json` via
-      defaulting field access; breaking changes to persisted fields are called out.
+      defaulting field access; `game_state.json` carries a `schema_version`; a regression test
+      loads an older-version save fixture; breaking persisted-field changes bump `schema_version`.
 - [ ] **VI. Sub-Agent Execution & Test Independence**: Plan delegates ALL implementation and
       testing to sub-agents (orchestrator only plans/reviews); test and implementation work go
-      to separate sub-agents; every implementation and testing sub-agent runs the Sonnet model.
+      to separate sub-agents; sub-agents run Sonnet by default (Opus only with explicit prior
+      user permission, recorded in Complexity Tracking).
+- [ ] **Constraints**: Any new external dependency is declared in `requirements.txt`; new
+      platform-specific code provides both a Windows and a Linux path.
 
 ## Project Structure
 
