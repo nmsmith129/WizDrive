@@ -9,14 +9,19 @@ description: "Task list template for feature implementation"
 
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 
-**Tests**: The examples below include test tasks. Tests are OPTIONAL - only include them if explicitly requested in the feature specification.
+**Tests**: Per WizDrive Constitution Principle I (Test-First, NON-NEGOTIABLE), test tasks are REQUIRED for new behaviour — include coverage for parser paths, combat/XP/state changes, and deterministic handling of probabilistic logic. (The Spec Kit default treats tests as optional; this project overrides that.)
+
+**Agent separation (Constitution Principle VI)**: ALL implementation and testing MUST be delegated to sub-agents — the orchestrator only plans, delegates, and reviews. Test tasks go to a dedicated **testing sub-agent**, implementation tasks to a separate **implementation sub-agent**, and the implementer never writes or edits its own tests. **Every implementation and testing sub-agent MUST run the Sonnet model.** Test tasks below are tagged `[TEST-AGENT]` and implementation tasks `[IMPL-AGENT]` to make the assignment explicit.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
-## Format: `[ID] [P?] [Story] Description`
+## Format: `[ID] [P?] [Story] [Agent] Description`
 
 - **[P]**: Can run in parallel (different files, no dependencies)
 - **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)
+- **[Agent]**: `[TEST-AGENT]` for test-writing/running tasks, `[IMPL-AGENT]` for feature
+  implementation tasks — they MUST be different sub-agents (Constitution Principle VI).
+  Setup/infra tasks with no test/impl distinction may omit this tag.
 - Include exact file paths in descriptions
 
 ## Path Conventions
@@ -80,21 +85,21 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 1 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 1 (REQUIRED — Constitution Principle I) ⚠️
 
-> **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
+> **NOTE: The TEST-AGENT writes these tests FIRST and ensures they FAIL before implementation**
 
-- [ ] T010 [P] [US1] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T011 [P] [US1] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T010 [P] [US1] [TEST-AGENT] Contract test for [endpoint] in tests/contract/test_[name].py
+- [ ] T011 [P] [US1] [TEST-AGENT] Integration test for [user journey] in tests/integration/test_[name].py
 
 ### Implementation for User Story 1
 
-- [ ] T012 [P] [US1] Create [Entity1] model in src/models/[entity1].py
-- [ ] T013 [P] [US1] Create [Entity2] model in src/models/[entity2].py
-- [ ] T014 [US1] Implement [Service] in src/services/[service].py (depends on T012, T013)
-- [ ] T015 [US1] Implement [endpoint/feature] in src/[location]/[file].py
-- [ ] T016 [US1] Add validation and error handling
-- [ ] T017 [US1] Add logging for user story 1 operations
+- [ ] T012 [P] [US1] [IMPL-AGENT] Create [Entity1] model in src/models/[entity1].py
+- [ ] T013 [P] [US1] [IMPL-AGENT] Create [Entity2] model in src/models/[entity2].py
+- [ ] T014 [US1] [IMPL-AGENT] Implement [Service] in src/services/[service].py (depends on T012, T013)
+- [ ] T015 [US1] [IMPL-AGENT] Implement [endpoint/feature] in src/[location]/[file].py
+- [ ] T016 [US1] [IMPL-AGENT] Add validation and error handling
+- [ ] T017 [US1] [IMPL-AGENT] Add logging for user story 1 operations
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 

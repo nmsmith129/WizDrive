@@ -40,7 +40,23 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+Confirm this plan complies with the WizDrive Constitution (`.specify/memory/constitution.md`).
+Mark each gate PASS / FAIL (justify any FAIL in Complexity Tracking):
+
+- [ ] **I. Test-First (NON-NEGOTIABLE)**: New behaviour ships with pytest coverage; parser
+      changes cover `load_map_file`/`validate_map_file`/`load_map_text`; probabilistic logic
+      is made deterministic in tests.
+- [ ] **II. Data-Driven Content**: New enemies/items/maps extend `ENEMY_TYPES`/`ITEM_TYPES`
+      or the `.dngn` format (with fallbacks) rather than hardcoding content into logic.
+- [ ] **III. Rendering-Agnostic Core**: Game logic stays visualizer-independent and avoids a
+      `pygame` dependency where possible; all visualizers consume the same shared state.
+- [ ] **IV. Consistent Code Style**: Python 3.11+, type hints, snake_case/PascalCase/UPPER_SNAKE
+      naming, single-line first-line comments, `!r` for untrusted values.
+- [ ] **V. Backward-Compatible Persistence**: Save/load tolerates older `game_state.json` via
+      defaulting field access; breaking changes to persisted fields are called out.
+- [ ] **VI. Sub-Agent Execution & Test Independence**: Plan delegates ALL implementation and
+      testing to sub-agents (orchestrator only plans/reviews); test and implementation work go
+      to separate sub-agents; every implementation and testing sub-agent runs the Sonnet model.
 
 ## Project Structure
 

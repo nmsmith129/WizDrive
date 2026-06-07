@@ -34,8 +34,8 @@ Items are ordered so that every feature appears after all features it depends on
 ### Assets — Sprites & Textures
 - [ ] Wall textures
 - [ ] Character sprites
-- [d] Enemy sprites
-- [d] Item sprites
+- [p] Enemy sprites
+- [p] Item sprites
 - [ ] Character/enemy sprites
 
 ### Rendering
