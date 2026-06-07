@@ -2,23 +2,21 @@ import sys
 
 # 0 = pygame visualizer
 # 1 = text visualizer (terminal, real-time keypresses)
-# 2 = ClaudeCode visualizer (single keystroke arg, saves state between runs)
-VISUALIZER = 2
+VISUALIZER = 0
 
 import pygame
 pygame.init()
 
-import mapLoader
-mapLoader.debug = False
-from mapLoader import loadMapFile
-from gameState import GameState
+import map_loader
+map_loader.debug = False
+from map_loader import load_map_file
+from game_state import GameState
 
 if VISUALIZER == 0:
-    from mapVisualizer import MapVisualizer
+    from map_visualizer import MapVisualizer
 elif VISUALIZER == 1:
-    from textVisualizer import render_floor
-elif VISUALIZER == 2:
-    import ClaudeCodeVisualizer
+    from text_visualizer import render_floor
+
 
 
 def run_pygame(state):
@@ -49,7 +47,7 @@ def run_pygame(state):
 
         screen.fill((0, 0, 0))
         visualizer.draw(
-            (state.grid, state.player.location, state.player.facing, state.enemies, state.items),
+            (state.grid, state.player.location, state.player.facing, state.enemies, state.items, state.stairs),
             state.player,
         )
         pygame.display.flip()
@@ -80,15 +78,8 @@ def run_text(state):
 
 
 if __name__ == "__main__":
-    if VISUALIZER == 2:
-        ClaudeCodeVisualizer.run(
-            dungeon_path=sys.argv[1] if len(sys.argv) > 1 and sys.argv[1].endswith(".dngn") else None,
-            key=sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].endswith(".dngn") else None,
-        )
-        sys.exit(0)
-
     if len(sys.argv) < 2:
-        print("Usage: python wizDriveMain.py <file.dngn>")
+        print("Usage: python wiz_drive_main.py <file.dngn>")
         sys.exit(1)
 
     path = sys.argv[1]
@@ -96,7 +87,7 @@ if __name__ == "__main__":
         print(f"Error: '{path}' is not a .dngn file.")
         sys.exit(1)
 
-    _, _, floors = loadMapFile(path)
+    _, _, floors = load_map_file(path)
     state = GameState.new(path, floors)
 
     if VISUALIZER == 0:

@@ -21,6 +21,38 @@ class TestPlayerInit:
         assert p.mp == 7
 
 
+class TestPlayerAttributes:
+    def test_default_attributes(self):
+        p = Player("Hero")
+        assert p.attack == 0.5
+        assert p.strength == 1
+        assert p.defense == 1
+        assert p.max_hp == 10
+        assert p.intelligence == 1
+        assert p.mana == 1
+
+    def test_no_weapon_by_default(self):
+        assert Player("Hero").weapon is None
+
+    def test_hp_defaults_to_max_hp(self):
+        assert Player("Hero").hp == 10
+
+    def test_mp_defaults_to_mana(self):
+        assert Player("Hero").mp == 1
+
+    def test_explicit_hp_overrides_default(self):
+        assert Player("Hero", hp=25).hp == 25
+
+    def test_explicit_mp_overrides_default(self):
+        assert Player("Hero", mp=8).mp == 8
+
+    def test_attributes_are_overridable(self):
+        p = Player("Hero", attack=0.75, strength=4, defense=2, max_hp=30,
+                   intelligence=6, mana=12)
+        assert (p.attack, p.strength, p.defense, p.max_hp, p.intelligence, p.mana) == \
+            (0.75, 4, 2, 30, 6, 12)
+
+
 @pytest.mark.parametrize("facing,direction,expected", [
     ("north", "forward",  (0,  1)),
     ("north", "backward", (0, -1)),

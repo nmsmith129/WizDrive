@@ -2,9 +2,9 @@ import sys
 import pygame
 pygame.init()
 
-import mapLoader
-mapLoader.debug = False
-from mapLoader import loadMapFile
+import map_loader
+map_loader.debug = False
+from map_loader import load_map_file
 from player import Player
 
 WALL   = "#"
@@ -57,7 +57,7 @@ def render_floor(floor, floor_num: int) -> None:
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python textVisualizer.py <file.dngn>")
+        print("Usage: python text_visualizer.py <file.dngn>")
         sys.exit(1)
 
     path = sys.argv[1]
@@ -65,5 +65,5 @@ if __name__ == "__main__":
         print(f"Error: '{path}' is not a .dngn file.")
         sys.exit(1)
 
-    _, _, floors = loadMapFile(path)
+    _, _, floors = load_map_file(path)
     render_floor(floors[0], 1)

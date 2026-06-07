@@ -48,7 +48,7 @@ test_visualizer.py       Manual test script for the pygame debug viewer
 tests/                   Automated test suite (pytest, 146 tests)
 DebugMapLoader.dngn      Minimal two-floor dungeon used for parser debugging
 liveTestOne.dngn         Richer two-floor dungeon with stairs, enemies, items
-game_state.json          (git-ignored) Runtime state file for ClaudeCodeVisualizer
+game_state.json          (git-ignored) Runtime save file written by GameState.save()
 ROADMAP.md               Full feature roadmap (8 phases)
 ROADMAP_PRIORITY.md      Same features ordered by implementation sequence
 SECOND_ROADMAP.md        Dependency-ordered roadmap
@@ -60,51 +60,33 @@ SECOND_ROADMAP.md        Dependency-ordered roadmap
 
 ### Visualizer Modes
 
-The active visualizer is controlled by the `VISUALIZER` constant at the top of `wizDriveMain.py`:
+The active visualizer is controlled by the `VISUALIZER` constant at the top of `wiz_drive_main.py`:
 
 | Value | Mode | Notes |
 |-------|------|-------|
-| `0` | Pygame top-down | Real-time, requires a display (WASD + Q) |
+| `0` | Pygame top-down (default) | Real-time, requires a display (WASD + Q) |
 | `1` | Text/terminal | Real-time keypresses via `msvcrt` (Windows only) |
-| `2` | ClaudeCode (default) | Stateful, single-keystroke arg — designed for AI use |
 
-### Pygame mode (VISUALIZER = 0)
+### Pygame mode (VISUALIZER = 0, default)
 ```bash
-python wizDriveMain.py liveTestOne.dngn
+python wiz_drive_main.py liveTestOne.dngn
 # Controls: W forward, S backward, A turn left, D turn right, Q quit
 ```
 
-### ClaudeCode mode (VISUALIZER = 2, default)
-This mode saves state to `game_state.json` between invocations so an AI can drive the game one keypress at a time.
-
+### Text mode (VISUALIZER = 1)
 ```bash
-# Initialize / load a dungeon:
-python wizDriveMain.py liveTestOne.dngn
-
-# Send one keystroke (w/s/a/d):
-python wizDriveMain.py w    # move forward
-python wizDriveMain.py a    # turn left
-python wizDriveMain.py d    # turn right
-python wizDriveMain.py s    # move backward
-
-# Re-render without moving:
-python wizDriveMain.py
-```
-
-`ClaudeCodeVisualizer.py` can also be run directly with the same interface:
-```bash
-python ClaudeCodeVisualizer.py liveTestOne.dngn
-python ClaudeCodeVisualizer.py w
+python wiz_drive_main.py liveTestOne.dngn
+# Real-time keypresses (Windows-only msvcrt): W/S/A/D to move, Q to quit
 ```
 
 ### Text visualizer (standalone, read-only)
 ```bash
-python textVisualizer.py liveTestOne.dngn
+python text_visualizer.py liveTestOne.dngn
 ```
 
 ### Map loader (standalone, for inspection/debugging)
 ```bash
-python mapLoader.py liveTestOne.dngn
+python map_loader.py liveTestOne.dngn
 ```
 
 ---
@@ -131,7 +113,8 @@ Each floor block (separated from others by blank lines):
 <facing>         ← N/E/S/W or north/east/south/west (case-insensitive)
 [ENEMY|name|px py]                         ← uses stats from ENEMY_TYPES library
 [ENEMY|name|hp|attack|speed|px py]         ← explicit stats
-[ITEM|name|value|description|px py]
+[ITEM|name|px py]                          ← uses value/description/category/effect from ITEM_TYPES library
+[ITEM|name|value|description|px py]        ← explicit value/description (category/effect still from library by name)
 [STAIRS|px py]
 ```
 
@@ -156,7 +139,7 @@ XP for explicit-stat enemies is always looked up from `ENEMY_TYPES` (xp is not p
 .dngn file
     │
     ▼
-mapLoader.loadMapFile()
+map_loader.load_map_file()
     │  returns (name, numFloors, [FloorData, ...])
     │
     ▼
@@ -164,13 +147,14 @@ FloorData = (grid, playerPos, facing, enemies, items, stairs)
     │
     ├─▶ Player object  (player.py)
     │
+    ├─▶ GameState  (game_state.py)   movement / combat / floor dispatch via apply_key()
+    │
     └─▶ Visualizer
            ├── MapVisualizer.draw()      (pygame)
-           ├── render_floor()            (text/ASCII)
-           └── ClaudeCodeVisualizer.run() (stateful JSON)
+           └── render_floor()            (text/ASCII)
 ```
 
-### `FloorData` type alias (`mapLoader.py`)
+### `FloorData` type alias (`map_loader.py`)
 ```python
 FloorData = tuple[
     List[List[int]],          # grid[y][x]: 0=open, 1=wall
@@ -196,7 +180,8 @@ Rendered as a red 32×32 surface. Fields: `name`, `hp`, `attack`, `speed`, `grid
 Stats for named enemies come from `enemyTypes.ENEMY_TYPES`; unknown names fall back to `{hp:10, attack:3, speed:1, xp:0}`.
 
 **`Item`** (`item.py`) — extends `pygame.sprite.Sprite`  
-Rendered as a gold/yellow 32×32 surface. Fields: `name`, `value`, `description`, `grid_x`, `grid_y`.
+Rendered as a gold/yellow 32×32 surface. Fields: `name`, `value`, `description`, `category` (`weapon`/`armor`/`consumable`/`treasure`/`misc`), `effect` (category-specific bonus dict, e.g. `{"strength": 4}`), `grid_x`, `grid_y`.  
+Named items can pull `value`/`description`/`category`/`effect` from `item.ITEM_TYPES` via `get_item_stats()`; unknown names fall back to `{value:1, category:"misc", description:""}`.
 
 **`GameState`** (`gameState.py`)  
 All runtime state: current floor, player, enemies, items. Handles combat logic, floor transitions, save/load to `game_state.json`.
@@ -205,11 +190,11 @@ All runtime state: current floor, player, enemies, items. Handles combat logic, 
 
 | Function | Purpose |
 |----------|---------|
-| `loadMapFile(path)` | Load from a `.dngn` file on disk |
-| `loadMapText(text)` | Load from a string (same format) |
-| `validateMapFile(path)` | Returns `(is_valid, [errors])` without loading for use |
+| `load_map_file(path)` | Load from a `.dngn` file on disk |
+| `load_map_text(text)` | Load from a string (same format) |
+| `validate_map_file(path)` | Returns `(is_valid, [errors])` without loading for use |
 
-Set `mapLoader.debug = False` (as done in all entry-point files) to suppress verbose `[DEBUG]` output.
+Set `map_loader.debug = False` (as done in all entry-point files) to suppress verbose `[DEBUG]` output.
 
 ---
 
@@ -239,7 +224,7 @@ When the player moves (`w`/`s`) into a tile occupied by an enemy, `GameState._do
 | Zombie | 25 | Vampire | 50 |
 | | | Dragon | 100 |
 
-Player death is printed but does not halt the game loop yet.
+`Player.strike()` returns `True` when the enemy is defeated. Player death is printed but does not halt the game loop yet. Combat is now probabilistic, so tests monkeypatch `player.random.random` for determinism.
 
 ---
 
@@ -271,7 +256,7 @@ Enemies deliberately have no attributes — they keep their `ENEMY_TYPES` stat b
 
 ## Floor Transitions
 
-Stepping onto a `STAIRS` tile (after a successful move) advances `floor_index` and resets the player to the new floor's start position and facing. If no next floor exists, a message is printed.
+Also handled in `GameState.apply_key()`: stepping onto a `STAIRS` tile (after a successful move) advances `floor_index` and resets the player to the new floor's start position and facing. If no next floor exists, a message is printed.
 
 ---
 
@@ -303,18 +288,13 @@ Combat tests (`test_combat.py`) monkeypatch `player.random.random` via `always_h
 Manual testing:
 ```bash
 # Validate a dungeon file:
-python mapLoader.py DebugMapLoader.dngn
+python map_loader.py DebugMapLoader.dngn
 
 # Render a dungeon as ASCII:
-python textVisualizer.py liveTestOne.dngn
+python text_visualizer.py liveTestOne.dngn
 
 # Open the pygame debug viewer (requires a display):
 python test_visualizer.py liveTestOne.dngn
-
-# Drive the game via ClaudeCode visualizer:
-python ClaudeCodeVisualizer.py liveTestOne.dngn
-python ClaudeCodeVisualizer.py w
-python ClaudeCodeVisualizer.py a
 ```
 
 When adding new `.dngn` parser features, test both `loadMapFile` and `validateMapFile` paths, and exercise `loadMapText` for in-memory cases.

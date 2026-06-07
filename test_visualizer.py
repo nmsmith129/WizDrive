@@ -1,12 +1,12 @@
 import sys
 import pygame
 
-# pygame must be initialized before loadMapFile, since Enemy/Item create
+# pygame must be initialized before load_map_file, since Enemy/Item create
 # pygame.Surface objects in their constructors during map parsing.
 pygame.init()
 
-from mapLoader import loadMapFile
-from mapVisualizer import run_debug_viewer
+from map_loader import load_map_file
+from map_visualizer import run_debug_viewer
 from player import Player
 
 if len(sys.argv) < 2:
@@ -18,10 +18,10 @@ if not path.endswith(".dngn"):
     print(f"Error: '{path}' is not a .dngn file.")
     sys.exit(1)
 
-_, _, floors = loadMapFile(path)
+_, _, floors = load_map_file(path)
 
 floor = floors[0]
-grid, start_pos, start_facing, enemies, items = floor
+grid, start_pos, start_facing, enemies, items, stairs = floor
 
 player = Player("Hero", hp=50, mp=10)
 player.location = start_pos

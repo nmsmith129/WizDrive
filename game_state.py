@@ -1,18 +1,13 @@
 import json
 import os
 
-import mapLoader
-mapLoader.debug = False
-from mapLoader import loadMapFile
+import map_loader
+map_loader.debug = False
+from map_loader import load_map_file
 from player import Player
 from enemy import Enemy
 
 STATE_FILE = os.path.join(os.path.dirname(__file__), "game_state.json")
-
-PLAYER_ATTACK = 5
-
-_MOVE_DELTAS = {"north": (0, 1), "south": (0, -1), "east": (1, 0), "west": (-1, 0)}
-_BACK_DELTAS = {"north": (0, -1), "south": (0, 1), "east": (-1, 0), "west": (1, 0)}
 
 
 class GameState:
@@ -43,7 +38,7 @@ class GameState:
     def new(cls, dungeon_path, floors):
         # Creates a fresh GameState from the first floor of a loaded dungeon, with a default Hero player.
         grid, start_pos, start_facing, enemies, items, stairs = floors[0]
-        player = Player("Hero", hp=50, mp=10)
+        player = Player("Hero")
         player.location = start_pos
         player.facing = start_facing
         return cls(dungeon_path, floors, 0, player, list(enemies))
@@ -53,10 +48,16 @@ class GameState:
         # Reconstructs a GameState by loading the JSON save file and re-parsing its dungeon.
         with open(STATE_FILE) as f:
             data = json.load(f)
-        _, _, floors = loadMapFile(data["dungeon"])
+        _, _, floors = load_map_file(data["dungeon"])
         player = Player("Hero", hp=data["hp"], mp=data["mp"])
         player.location = (data["x"], data["y"])
         player.facing = data["facing"]
+        player.attack = data.get("attack", 0.5)
+        player.strength = data.get("strength", 1)
+        player.defense = data.get("defense", 1)
+        player.max_hp = data.get("max_hp", 10)
+        player.intelligence = data.get("intelligence", 1)
+        player.mana = data.get("mana", 1)
         player.xp = data.get("xp", 0)
         player.level = data.get("level", 1)
         enemies = [
@@ -76,6 +77,12 @@ class GameState:
             "facing": self.player.facing,
             "hp": self.player.hp,
             "mp": self.player.mp,
+            "attack": self.player.attack,
+            "strength": self.player.strength,
+            "defense": self.player.defense,
+            "max_hp": self.player.max_hp,
+            "intelligence": self.player.intelligence,
+            "mana": self.player.mana,
             "xp": self.player.xp,
             "level": self.player.level,
             "enemies": [
@@ -100,46 +107,15 @@ class GameState:
                 return e
         return None
 
-    def _next_pos(self):
-        # Returns the grid coordinates one step ahead of the player.
-        x, y = self.player.location
-        dx, dy = _MOVE_DELTAS[self.player.facing]
-        return x + dx, y + dy
-
-    def _behind_pos(self):
-        # Returns the grid coordinates one step behind the player.
-        x, y = self.player.location
-        dx, dy = _BACK_DELTAS[self.player.facing]
-        return x + dx, y + dy
-
-    def _do_combat(self, enemy):
-        # Executes one round of combat: player attacks the enemy, then the enemy counter-attacks if it survives.
-        enemy.hp -= PLAYER_ATTACK
-        print(f"You attack {enemy.name} for {PLAYER_ATTACK} damage! ({enemy.hp} HP remaining)")
-        if enemy.hp <= 0:
-            print(f"{enemy.name} is defeated!")
-            self.enemies.remove(enemy)
-            xp_before = self.player.xp
-            self.player.xp += enemy.xp
-            print(f"You gained {enemy.xp} XP! (Total: {self.player.xp})")
-            levels_gained = (self.player.xp // 10) - (xp_before // 10)
-            if levels_gained > 0:
-                self.player.level += levels_gained
-                print(f"Level up! You are now level {self.player.level}!")
-        else:
-            self.player.hp -= enemy.attack
-            print(f"{enemy.name} hits back for {enemy.attack} damage! (Your HP: {self.player.hp})")
-            if self.player.hp <= 0:
-                print("You have been defeated!")
-
     def apply_key(self, key):
         # Processes a single keypress (WASD) and updates movement, combat, or floor transitions accordingly.
         key = key.lower()
         if key in ("w", "s"):
-            nx, ny = self._next_pos() if key == "w" else self._behind_pos()
+            nx, ny = self.player.next_pos() if key == "w" else self.player.prev_pos()
             target = self._enemy_at(nx, ny)
             if target:
-                self._do_combat(target)
+                if self.player.strike(target):
+                    self.enemies.remove(target)
             elif self._is_wall(nx, ny):
                 print("Blocked by a wall.")
             else:

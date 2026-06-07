@@ -1,11 +1,26 @@
+import types
+
 import pytest
-from gameState import GameState, PLAYER_ATTACK
+import player as player_module
+from game_state import GameState
 from player import Player
 from enemy import Enemy
 
 
+@pytest.fixture
+def always_hit(monkeypatch):
+    # Forces every strike's hit roll to succeed (random.random() < self.attack).
+    monkeypatch.setattr(player_module.random, "random", lambda: 0.0)
+
+
+@pytest.fixture
+def always_miss(monkeypatch):
+    # Forces every strike's hit roll to fail.
+    monkeypatch.setattr(player_module.random, "random", lambda: 0.99)
+
+
 def _make_player(hp=20):
-    return Player("Hero", hp=hp, mp=10)
+    return Player("Hero", hp=hp)
 
 
 def _make_enemy(name="Goblin", hp=10, attack=3, grid_x=1, grid_y=1):
@@ -19,74 +34,80 @@ def _make_state(player, enemies, grid=None):
     return GameState("dummy.dngn", [floor_data], 0, player, list(enemies))
 
 
-class TestDoCombat:
-    def test_player_deals_PLAYER_ATTACK_damage(self):
+class TestPlayerStrike:
+    def test_hit_deals_strength_damage(self, always_hit):
         p = _make_player()
         e = _make_enemy(hp=50)
-        state = _make_state(p, [e])
-        state._do_combat(e)
-        assert e.hp == 50 - PLAYER_ATTACK
+        p.strike(e)
+        assert e.hp == 50 - p.strength
 
-    def test_enemy_at_exact_threshold_is_defeated(self):
+    def test_hit_adds_weapon_strength(self, always_hit):
         p = _make_player()
-        e = _make_enemy(hp=PLAYER_ATTACK)
-        state = _make_state(p, [e])
-        state._do_combat(e)
-        assert state.enemies == []
+        p.weapon = types.SimpleNamespace(strength=4)
+        e = _make_enemy(hp=50)
+        p.strike(e)
+        assert e.hp == 50 - (p.strength + 4)
 
-    def test_enemy_below_threshold_is_defeated(self):
+    def test_miss_deals_no_enemy_damage(self, always_miss):
         p = _make_player()
-        e = _make_enemy(hp=PLAYER_ATTACK - 1)
-        state = _make_state(p, [e])
-        state._do_combat(e)
-        assert state.enemies == []
+        e = _make_enemy(hp=50)
+        p.strike(e)
+        assert e.hp == 50
 
-    def test_defeated_enemy_does_not_counter_attack(self):
+    def test_enemy_at_exact_threshold_is_defeated(self, always_hit):
+        p = _make_player()
+        e = _make_enemy(hp=p.strength)
+        assert p.strike(e) is True
+
+    def test_enemy_below_threshold_is_defeated(self, always_hit):
+        p = _make_player()
+        e = _make_enemy(hp=p.strength - 1)
+        assert p.strike(e) is True
+
+    def test_defeated_enemy_does_not_counter_attack(self, always_hit):
         p = _make_player(hp=20)
-        e = _make_enemy(hp=PLAYER_ATTACK, attack=99)
-        state = _make_state(p, [e])
-        state._do_combat(e)
+        e = _make_enemy(hp=p.strength, attack=99)
+        p.strike(e)
         assert p.hp == 20
 
-    def test_surviving_enemy_counter_attacks(self):
+    def test_surviving_enemy_counter_attacks(self, always_hit):
         p = _make_player(hp=20)
         e = _make_enemy(hp=50, attack=7)
-        state = _make_state(p, [e])
-        state._do_combat(e)
-        assert p.hp == 20 - 7
+        p.strike(e)
+        assert p.hp == 20 - max(1, 7 - p.defense)
 
-    def test_surviving_enemy_stays_in_list(self):
+    def test_miss_still_lets_enemy_counter_attack(self, always_miss):
+        p = _make_player(hp=20)
+        e = _make_enemy(hp=50, attack=7)
+        p.strike(e)
+        assert p.hp == 20 - max(1, 7 - p.defense)
+
+    def test_counter_damage_floored_at_one(self, always_hit):
+        p = _make_player(hp=20)
+        e = _make_enemy(hp=50, attack=1)
+        p.strike(e)
+        assert p.hp == 20 - 1
+
+    def test_surviving_enemy_returns_false(self, always_hit):
         p = _make_player()
         e = _make_enemy(hp=50)
-        state = _make_state(p, [e])
-        state._do_combat(e)
-        assert e in state.enemies
+        assert p.strike(e) is False
 
-    def test_player_defeated_hp_at_or_below_zero(self):
+    def test_player_defeated_hp_at_or_below_zero(self, always_hit):
         p = _make_player(hp=3)
         e = _make_enemy(hp=50, attack=10)
-        state = _make_state(p, [e])
-        state._do_combat(e)
+        p.strike(e)
         assert p.hp <= 0
 
-    def test_player_defeated_enemy_still_in_list(self):
-        p = _make_player(hp=1)
-        e = _make_enemy(hp=50, attack=10)
-        state = _make_state(p, [e])
-        state._do_combat(e)
-        assert len(state.enemies) == 1
-
-    def test_only_target_removed_not_bystander(self):
+    def test_only_target_removed_not_bystander(self, always_hit):
         p = _make_player()
         target = _make_enemy(name="Rat", hp=1, attack=1, grid_x=1, grid_y=1)
         bystander = _make_enemy(name="Dragon", hp=50, attack=15, grid_x=3, grid_y=3)
         state = _make_state(p, [target, bystander])
-        state._do_combat(target)
+        if state.player.strike(target):
+            state.enemies.remove(target)
         assert target not in state.enemies
         assert bystander in state.enemies
-
-    def test_PLAYER_ATTACK_constant_is_5(self):
-        assert PLAYER_ATTACK == 5
 
 
 class TestIsWall:
@@ -97,7 +118,7 @@ class TestIsWall:
     ]
 
     def _make_wall_state(self):
-        p = Player("Hero", hp=20, mp=10)
+        p = Player("Hero", hp=20)
         floor_data = (self.GRID, (0, 0), "north", [], [], None)
         return GameState("dummy.dngn", [floor_data], 0, p, [])
 
@@ -123,16 +144,15 @@ class TestIsWall:
         assert self._make_wall_state()._is_wall(100, 100) is True
 
 
-@pytest.mark.parametrize("facing,expected_next,expected_behind", [
+@pytest.mark.parametrize("facing,expected_next,expected_prev", [
     ("north", (3, 4), (3, 2)),
     ("south", (3, 2), (3, 4)),
     ("east",  (4, 3), (2, 3)),
     ("west",  (2, 3), (4, 3)),
 ])
-def test_next_and_behind_pos(facing, expected_next, expected_behind):
-    p = Player("Hero", hp=20, mp=10)
+def test_next_and_prev_pos(facing, expected_next, expected_prev):
+    p = Player("Hero", hp=20)
     p.location = (3, 3)
     p.facing = facing
-    state = _make_state(p, [])
-    assert state._next_pos() == expected_next
-    assert state._behind_pos() == expected_behind
+    assert p.next_pos() == expected_next
+    assert p.prev_pos() == expected_prev
