@@ -1,0 +1,38 @@
+Live Test Dungeon One
+2
+
+8
+1 1 1 1 1 1 1 1
+1 0 0 0 0 0 0 1
+1 0 1 1 0 1 0 1
+1 0 1 0 0 0 0 1
+1 0 0 0 1 0 0 1
+1 0 1 0 1 0 1 1
+1 0 0 0 0 0 0 1
+1 1 1 1 1 1 1 1
+1 6
+E
+ENEMY|Goblin|5 6
+ENEMY|Troll|3 3
+ITEM|Rusty Sword|15|A corroded blade, still serviceable|6 4
+ITEM|Healing Herb|10|Restores a small amount of HP|4 1
+STAIRS|6 1
+
+10
+1 1 1 1 1 1 1 1 1 1
+1 0 0 0 1 0 0 0 0 1
+1 0 1 0 1 0 1 1 0 1
+1 0 1 0 0 0 0 1 0 1
+1 0 0 0 1 1 0 0 0 1
+1 1 0 1 1 1 0 1 1 1
+1 0 0 0 0 0 0 0 0 1
+1 0 1 1 0 1 1 0 0 1
+1 0 0 0 0 0 0 0 0 1
+1 1 1 1 1 1 1 1 1 1
+1 1
+N
+ENEMY|Skeleton|5 8
+ENEMY|Dark Mage|6 3
+ENEMY|Wraith|2 3
+ITEM|Ancient Scroll|50|Inscribed with an unknown spell|8 7
+ITEM|Iron Key|5|Opens a locked door somewhere|4 2
