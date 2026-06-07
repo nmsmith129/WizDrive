@@ -33,18 +33,16 @@ WizDrive is a Python/Pygame dungeon crawler inspired by Wizardry. The project is
 ## Repository Layout
 
 ```
-wizDriveMain.py          Entry point; selects visualizer mode, runs the game loop
-gameState.py             GameState class: all runtime state, combat logic, save/load
-mapLoader.py             .dngn file parser, validator, and loader
+wiz_drive_main.py        Entry point; selects visualizer mode, runs the game loop
+game_state.py            GameState class: all runtime state, combat logic, save/load
+map_loader.py            .dngn file parser, validator, and loader
 player.py                Player class (position, facing, movement, attributes, XP/level)
-enemy.py                 Enemy class — extends pygame.sprite.Sprite
-enemyTypes.py            ENEMY_TYPES lookup table + get_stats() helper
-item.py                  Item class — extends pygame.sprite.Sprite
-mapVisualizer.py         Pygame top-down 2D map renderer + standalone debug viewer
-textVisualizer.py        ASCII terminal renderer, renders current floor as text
-ClaudeCodeVisualizer.py  Stateful single-keystroke visualizer designed for AI interaction
+enemy.py                 Enemy class (extends pygame.sprite.Sprite) + ENEMY_TYPES table & get_stats() helper
+item.py                  Item class (extends pygame.sprite.Sprite) + ITEM_TYPES table & get_item_stats() helper
+map_visualizer.py        Pygame top-down 2D map renderer + standalone debug viewer
+text_visualizer.py       ASCII terminal renderer, renders current floor as text
 test_visualizer.py       Manual test script for the pygame debug viewer
-tests/                   Automated test suite (pytest, 146 tests)
+tests/                   Automated test suite (pytest, 149 tests)
 DebugMapLoader.dngn      Minimal two-floor dungeon used for parser debugging
 liveTestOne.dngn         Richer two-floor dungeon with stairs, enemies, items
 game_state.json          (git-ignored) Runtime save file written by GameState.save()
@@ -176,16 +174,16 @@ Attributes: `attack: float`, `strength: int`, `defense: int`, `max_hp: int`, `in
 
 **`Enemy`** (`enemy.py`) — extends `pygame.sprite.Sprite`  
 Rendered as a red 32×32 surface. Fields: `name`, `hp`, `attack`, `speed`, `grid_x`, `grid_y`, `xp`.  
-Stats for named enemies come from `enemyTypes.ENEMY_TYPES`; unknown names fall back to `{hp:10, attack:3, speed:1, xp:0}`.
+Stats for named enemies come from `enemy.ENEMY_TYPES`; unknown names fall back to `{hp:10, attack:3, speed:1, xp:0}`.
 
 **`Item`** (`item.py`) — extends `pygame.sprite.Sprite`  
 Rendered as a gold/yellow 32×32 surface. Fields: `name`, `value`, `description`, `category` (`weapon`/`armor`/`consumable`/`treasure`/`misc`), `effect` (category-specific bonus dict, e.g. `{"strength": 4}`), `grid_x`, `grid_y`.  
 Named items can pull `value`/`description`/`category`/`effect` from `item.ITEM_TYPES` via `get_item_stats()`; unknown names fall back to `{value:1, category:"misc", description:""}`.
 
-**`GameState`** (`gameState.py`)  
+**`GameState`** (`game_state.py`)  
 All runtime state: current floor, player, enemies, items. Handles combat logic, floor transitions, save/load to `game_state.json`.
 
-### `mapLoader.py` Public API
+### `map_loader.py` Public API
 
 | Function | Purpose |
 |----------|---------|
@@ -246,7 +244,7 @@ Enemies deliberately have no attributes — they keep their `ENEMY_TYPES` stat b
 
 ---
 
-## Persistence (`gameState.py`)
+## Persistence (`game_state.py`)
 
 `GameState.save()` writes all player fields to `game_state.json`, including `xp`, `level`, and all six attributes.  
 `GameState.from_save()` restores each with `.get(field, default)` fallbacks so pre-attribute and pre-XP saves still load correctly.
@@ -266,7 +264,7 @@ Also handled in `GameState.apply_key()`: stepping onto a `STAIRS` tile (after a 
 - **Naming**: `snake_case` for modules/functions/variables, `PascalCase` for classes, `UPPER_SNAKE_CASE` for constants, `_leading_underscore` for module-private functions. The module *file* stays `snake_case` even when it contains a `PascalCase` class (e.g. `map_visualizer.py` → `class MapVisualizer`).
 - **Comments**: single-line `# comment` as the first line of a method body for non-obvious logic. Not docstrings. No comments on obvious code.
 - **Error messages** use `!r` (repr) formatting for untrusted/user-supplied values.
-- **`mapLoader.debug`** is a module-level bool. Set it to `False` in every entry-point file before calling any loader function. Never leave it `True` in committed code that runs as part of the game.
+- **`map_loader.debug`** is a module-level bool. Set it to `False` in every entry-point file before calling any loader function. Never leave it `True` in committed code that runs as part of the game.
 - `Enemy` and `Item` call `pygame.Surface(...)` in `__init__`, so `pygame.init()` **must** be called before any map is loaded.
 - `FloorData` tuples are positional; always unpack with named variables: `grid, start_pos, start_facing, enemies, items, stairs = floor`.
 
@@ -279,9 +277,9 @@ Run the full test suite with:
 python -m pytest tests/ -v
 ```
 
-146 tests across: `test_combat`, `test_enemy_types`, `test_map_loader`, `test_player`, `test_state`, `test_text_visualizer`, `test_validate_map`.
+149 tests across: `test_combat`, `test_enemy_types`, `test_item_types`, `test_map_loader`, `test_player`, `test_state`, `test_text_visualizer`, `test_validate_map`.
 
-Tests import from `gameState` and `player` directly — not from `ClaudeCodeVisualizer`.  
+Tests import from `game_state` and `player` directly.  
 Combat tests (`test_combat.py`) monkeypatch `player.random.random` via `always_hit`/`always_miss` fixtures for determinism.
 
 Manual testing:
@@ -296,7 +294,7 @@ python text_visualizer.py liveTestOne.dngn
 python test_visualizer.py liveTestOne.dngn
 ```
 
-When adding new `.dngn` parser features, test both `loadMapFile` and `validateMapFile` paths, and exercise `loadMapText` for in-memory cases.
+When adding new `.dngn` parser features, test both `load_map_file` and `validate_map_file` paths, and exercise `load_map_text` for in-memory cases.
 
 ---
 
