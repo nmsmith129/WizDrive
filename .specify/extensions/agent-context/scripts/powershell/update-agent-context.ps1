@@ -55,7 +55,7 @@ function Test-ConfigObject {
 $ErrorActionPreference = 'Stop'
 $DefaultStart = '<!-- SPECKIT START -->'
 $DefaultEnd   = '<!-- SPECKIT END -->'
-$ProjectRoot  = (Get-Location).Path
+$ProjectRoot  = (Get-Location).ProviderPath
 $ExtConfig    = Join-Path $ProjectRoot '.specify/extensions/agent-context/agent-context-config.yml'
 
 if (-not (Test-Path -LiteralPath $ExtConfig)) {
