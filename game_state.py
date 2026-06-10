@@ -8,6 +8,7 @@ from player import Player
 from enemy import Enemy
 
 STATE_FILE = os.path.join(os.path.dirname(__file__), "game_state.json")
+SCHEMA_VERSION: int = 1
 
 
 class GameState:
@@ -48,6 +49,12 @@ class GameState:
         # Reconstructs a GameState by loading the JSON save file and re-parsing its dungeon.
         with open(STATE_FILE) as f:
             data = json.load(f)
+        save_version = data.get("schema_version", 0)
+        if save_version > SCHEMA_VERSION:
+            raise ValueError(
+                f"Save is from a newer version of WizDrive "
+                f"(save {save_version!r} > supported {SCHEMA_VERSION!r})."
+            )
         _, _, floors = load_map_file(data["dungeon"])
         player = Player("Hero", hp=data["hp"], mp=data["mp"])
         player.location = (data["x"], data["y"])
@@ -70,6 +77,7 @@ class GameState:
     def save(self):
         # Serializes the current game state to the JSON save file.
         data = {
+            "schema_version": SCHEMA_VERSION,
             "dungeon": self.dungeon_path,
             "floor": self.floor_index,
             "x": self.player.location[0],

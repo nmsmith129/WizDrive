@@ -81,19 +81,19 @@ loading partial state.
 
 ### Functional Requirements
 
-- **FR-001**: The system MUST record a save-format version identifier in every save file it writes.
+- **FR-001**: The system MUST record a save-format version identifier — a positive integer starting at 1 — in every save file it writes.
 - **FR-002**: The system MUST load save files that predate version tracking (no version field) without error, treating them as the earliest format.
 - **FR-003**: The system MUST restore all persisted character state — location, facing, HP, MP, XP, level, and the six attributes — from any supported save version.
 - **FR-004**: When a persisted field is absent, the system MUST substitute a documented default and continue loading.
-- **FR-005**: The system MUST decline to load a save whose format version is newer than it supports, informing the player rather than loading partial or incorrect state.
+- **FR-005**: The system MUST decline to load a save whose format version (integer) is greater than the version it supports, informing the player rather than loading partial or incorrect state.
 - **FR-006**: A failed load MUST be non-destructive — the on-disk save file MUST NOT be overwritten when it cannot be loaded.
 - **FR-007**: Save compatibility MUST be covered by an automated regression test that loads an older-version save fixture and asserts correct restoration.
 
 ### Key Entities
 
 - **Save File** (`game_state.json`): the persisted snapshot of a game. Holds a format
-  version identifier plus all player state fields. Written by the save action and
-  consumed by the load action.
+  version identifier (a positive integer, starting at 1 for the initial schema) plus all
+  player state fields. Written by the save action and consumed by the load action.
 
 ## Success Criteria *(mandatory)*
 
@@ -115,3 +115,9 @@ loading partial state.
 - Forward migration of very old saves beyond default-filling is out of scope; the current
   per-field default behavior is retained.
 - Only one save file/slot is in scope (multiple save slots are a separate roadmap item).
+
+## Clarifications
+
+### Session 2026-06-10
+
+- Q: What format should the version identifier take in the save file? → A: Integer, starting at 1.

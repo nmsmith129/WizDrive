@@ -5,27 +5,27 @@ Items are ordered so that every feature appears after all features it depends on
 ## Implementation Sequence
 
 ### Core Map System
-- [d] Map data structure (grid-based representation)
-- [d] Map file format (`.lvlmap` support)
-- [d] Map validation and error handling
-- [d] Multiple map/level support
-- [d] Dynamic object placement on maps
-- [d] Item descriptions
+- [x] Map data structure (grid-based representation)
+- [x] Map file format (`.lvlmap` support)
+- [x] Map validation and error handling
+- [x] Multiple map/level support
+- [x] Dynamic object placement on maps
+- [x] Item descriptions
 
 ### Core Entity Classes
-- [d] Player class with position tracking
-- [d] Player rotation system (facing direction)
-- [d] MazeObject class for enemies
-- [d] Enemy health/stats system
-- [d] Multiple enemy types
-- [d] Enemy placement on maps
-- [d] Item placement on maps (chests, torches)
+- [x] Player class with position tracking
+- [x] Player rotation system (facing direction)
+- [x] MazeObject class for enemies
+- [x] Enemy health/stats system
+- [x] Multiple enemy types
+- [x] Enemy placement on maps
+- [x] Item placement on maps (chests, torches)
 
 ### Player Attributes & Progression
 - [p] Player attributes (health, mana, experience, level)
-- [d] Health/Hit Points (HP)
-- [d] Mana/Spell Points (MP)
-- [d] Experience points (XP)
+- [x] Health/Hit Points (HP)
+- [x] Mana/Spell Points (MP)
+- [x] Experience points (XP)
 - [p] Level system
 - [p] Attribute system (Strength, Intelligence, Dexterity, Constitution, Wisdom, Charisma)
 - [ ] Skill system
@@ -123,9 +123,10 @@ Items are ordered so that every feature appears after all features it depends on
 - [ ] Item filtering/sorting
 
 ### Save / Load System
-- [ ] Save file format (JSON or binary)
-- [ ] Save game functionality
-- [ ] Load game functionality
+- [x] Save file format (JSON or binary)
+- [x] Schema versioning (legacy v0 loads; new saves stamped v1; v2+ rejected with clear error)
+- [x] Save game functionality
+- [x] Load game functionality
 - [ ] Multiple save slots
 - [ ] Auto-save system
 - [ ] Delete save file option
