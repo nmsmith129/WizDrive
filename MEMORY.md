@@ -109,4 +109,9 @@ Naming follows PEP 8: `snake_case` for modules/functions/variables; `PascalCase`
 **Why:** User asked to fix class names to PascalCase after an over-zealous snake_case conversion had lowercased a class.
 **How to apply:** Class names are always `PascalCase` even though everything else is snake_case. The module *file* name stays snake_case (e.g. `map_visualizer.py` contains `class MapVisualizer`).
 
+### feedback-sub-agent-delegation
+During `/speckit-implement`, delegate ALL coding and test-writing to sub-agents — the orchestrator never writes feature code or tests directly. (type: feedback)
+**Why:** Constitution Principle VI is explicit on this. Violated on the 001-persistence-schema-versioning feature — wrote all code inline as the orchestrator instead of spawning a testing sub-agent and a separate implementation sub-agent.
+**How to apply:** When tasks.md has `[TEST-AGENT]` tasks, spawn a Sonnet sub-agent (Agent tool) to write those tests and confirm they FAIL before implementation. Then spawn a separate Sonnet sub-agent for `[IMPL-AGENT]` tasks. Infra/setup tasks (fixture files, directory creation) are orchestrator work and don't require delegation. Opus escalation requires explicit prior user permission recorded in plan.md Complexity Tracking.
+
 <!-- MEMORIES END -->
