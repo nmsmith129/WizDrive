@@ -4,12 +4,14 @@
 # Find repository root by searching upward for .specify directory
 # This is the primary marker for spec-kit projects
 function Find-SpecifyRoot {
-    param([string]$StartDir = (Get-Location).Path)
+    param([string]$StartDir = (Get-Location).ProviderPath)
 
     # Normalize to absolute path to prevent issues with relative paths
     # Use -LiteralPath to handle paths with wildcard characters ([, ], *, ?)
+    # Use ProviderPath (not .Path) so UNC roots resolve to a plain filesystem
+    # path (\\host\share\...) rather than a provider-qualified one that breaks `git -C`.
     $resolved = Resolve-Path -LiteralPath $StartDir -ErrorAction SilentlyContinue
-    $current = if ($resolved) { $resolved.Path } else { $null }
+    $current = if ($resolved) { $resolved.ProviderPath } else { $null }
     if (-not $current) { return $null }
 
     while ($true) {

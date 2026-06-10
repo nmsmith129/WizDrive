@@ -4,7 +4,7 @@
 # branch validation and detection logic.
 
 function Test-HasGit {
-    param([string]$RepoRoot = (Get-Location))
+    param([string]$RepoRoot = (Get-Location).ProviderPath)
     try {
         if (-not (Test-Path (Join-Path $RepoRoot '.git'))) { return $false }
         if (-not (Get-Command git -ErrorAction SilentlyContinue)) { return $false }
