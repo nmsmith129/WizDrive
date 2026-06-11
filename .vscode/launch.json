@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "WizDrive: Run (liveTestOne)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/wiz_drive_main.py",
+      "args": ["liveTestOne.dngn"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    }
+  ]
+}
