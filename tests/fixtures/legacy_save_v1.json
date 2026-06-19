@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "dungeon": "DebugMapLoader.dngn",
+  "floor": 0,
+  "x": 1,
+  "y": 1,
+  "facing": "north",
+  "hp": 10,
+  "mp": 1,
+  "attack": 0.5,
+  "strength": 1,
+  "defense": 1,
+  "max_hp": 10,
+  "intelligence": 1,
+  "mana": 1,
+  "xp": 0,
+  "level": 1,
+  "enemies": []
+}
