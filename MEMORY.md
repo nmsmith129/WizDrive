@@ -114,4 +114,25 @@ During `/speckit-implement`, delegate ALL coding and test-writing to sub-agents 
 **Why:** Constitution Principle VI is explicit on this. Violated on the 001-persistence-schema-versioning feature — wrote all code inline as the orchestrator instead of spawning a testing sub-agent and a separate implementation sub-agent.
 **How to apply:** When tasks.md has `[TEST-AGENT]` tasks, spawn a Sonnet sub-agent (Agent tool) to write those tests and confirm they FAIL before implementation. Then spawn a separate Sonnet sub-agent for `[IMPL-AGENT]` tasks. Infra/setup tasks (fixture files, directory creation) are orchestrator work and don't require delegation. Opus escalation requires explicit prior user permission recorded in plan.md Complexity Tracking.
 
+### project-item-pickup-inventory
+Item pickup, inventory, and weapon auto-equip system (feature 002) — design, combat wiring, persistence. (type: project)
+**Why:** User chose to build item pickup next (2026-06-19), scoped as "pickup into inventory + auto-equip weapons" with inventory persisted across save/load. Fulfills SECOND_ROADMAP.md's "Item pickup mechanics" and partially "Item use/equip system", "Equipment slots", "Player inventory system".
+**How to apply:** When touching items, combat, player init, or save/load, account for this system.
+
+Design:
+- `Player.inventory: list` (default `[]`, in `player.py`) — items collected this session. `player.py` stays free of any `pygame` import (Principle III); it only holds `Item` references.
+- `Player.pick_up(item)` — appends to inventory; auto-equips when `item.category == "weapon"` and `item.strength > (weapon.strength if weapon else 0)`. Prints pickup + equip messages (`print`, `!r` on names).
+- `Item.strength` (in `item.py`) is a read-only `@property` returning `self.effect.get("strength", 0)`, so an `Item` satisfies the weapon-slot contract `strike()` relies on (`self.weapon.strength`). This is how the old `self.weapon = None` stub gets filled.
+- Pickup trigger: `GameState.apply_key()` successful-move branch, AFTER `move()` and BEFORE the stairs check, loops `_item_at()` collecting every item at the new tile, stamping `item.origin_floor = self.floor_index`, then `self.items.remove(item)`. `_item_at(x, y)` mirrors `_enemy_at`. Visualizers render the live `items` list, so removed items vanish with NO visualizer changes.
+- Combat precedence: moving into an enemy tile triggers `strike()` and the player does not advance, so no pickup there.
+
+Persistence (bumped `SCHEMA_VERSION` 1 → 2):
+- `save()` writes `inventory` (per item: name, value, description, category, effect, grid_x, grid_y, origin_floor via `getattr(..., None)`) and `equipped_weapon` (inventory index of the equipped item by identity, or `None`).
+- `from_save()` rebuilds `Item`s (needs `from item import Item`), restores `player.weapon = inventory[eq]` as the SAME object, and removes each collected item from its `origin_floor`'s re-parsed item list (match by grid_x, grid_y, name) so it does not respawn. Legacy v0/v1 saves (no `inventory` key) load with empty inventory and `weapon=None` via `.get` defaults.
+- The schema bump broke two v1-hardcoded tests in `tests/test_schema_version.py`; they were updated (by the testing sub-agent) to v2-current: `test_save_schema_version_is_2` asserts `== 2`, and `test_newer_version_save_raises` now uses `schema_version: 3`.
+
+Tests: `tests/test_item_pickup.py` (16 tests: pickup, auto-equip, persistence) + `tests/fixtures/legacy_save_v1.json`. Full suite 192 passing. Spec Kit artifacts in `specs/002-item-pickup-mechanics/`.
+
+Out of scope (later roadmap): consumable *use* (Health Potion healing), armor/accessory slots, drop/sell, inventory HUD.
+
 <!-- MEMORIES END -->

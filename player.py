@@ -23,6 +23,7 @@ class Player:
         self.intelligence = intelligence  # Spell effectiveness; consumed once spells exist
         self.mana = mana  # Maximum mana
         self.weapon = None  # Equipped weapon stub; future equipment system fills this slot
+        self.inventory: list = []  # Items collected during this session
         self.hp = max_hp if hp is None else hp  # Current HP, starts full
         self.mp = mana if mp is None else mp  # Current mana, starts full
         self.xp = 0
@@ -101,3 +102,11 @@ class Player:
     def use_item(self, item):
         # Placeholder for item usage logic
         print(f"{self.name} uses {item}!")
+
+    def pick_up(self, item) -> None:
+        # Appends the item to inventory and auto-equips it if it is a stronger weapon than the current one.
+        self.inventory.append(item)
+        print(f"You picked up {item.name!r}.")
+        if item.category == "weapon" and item.strength > (self.weapon.strength if self.weapon else 0):
+            self.weapon = item
+            print(f"You equipped {item.name!r}.")

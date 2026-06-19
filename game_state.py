@@ -6,9 +6,10 @@ map_loader.debug = False
 from map_loader import load_map_file
 from player import Player
 from enemy import Enemy
+from item import Item
 
 STATE_FILE = os.path.join(os.path.dirname(__file__), "game_state.json")
-SCHEMA_VERSION: int = 1
+SCHEMA_VERSION: int = 2
 
 
 class GameState:
@@ -72,6 +73,30 @@ class GameState:
                   grid_x=e["grid_x"], grid_y=e["grid_y"], xp=e.get("xp", 0))
             for e in data["enemies"]
         ]
+        inv_entries = data.get("inventory", [])
+        inventory: list[Item] = []
+        for entry in inv_entries:
+            item = Item(
+                entry["name"], entry["value"], entry["description"],
+                entry["grid_x"], entry["grid_y"],
+                category=entry["category"], effect=entry["effect"],
+            )
+            item.origin_floor = entry.get("origin_floor")
+            inventory.append(item)
+        player.inventory = inventory
+        eq = data.get("equipped_weapon")
+        if eq is not None:
+            player.weapon = player.inventory[eq]
+        for inv_item in player.inventory:
+            origin = inv_item.origin_floor
+            if origin is not None and origin < len(floors):
+                floor_items = floors[origin][4]
+                for floor_item in list(floor_items):
+                    if (floor_item.grid_x == inv_item.grid_x
+                            and floor_item.grid_y == inv_item.grid_y
+                            and floor_item.name == inv_item.name):
+                        floor_items.remove(floor_item)
+                        break
         return cls(data["dungeon"], floors, data["floor"], player, enemies)
 
     def save(self):
@@ -98,6 +123,24 @@ class GameState:
                  "grid_x": e.grid_x, "grid_y": e.grid_y, "xp": e.xp}
                 for e in self.enemies
             ],
+            "inventory": [
+                {
+                    "name": item.name,
+                    "value": item.value,
+                    "description": item.description,
+                    "category": item.category,
+                    "effect": item.effect,
+                    "grid_x": item.grid_x,
+                    "grid_y": item.grid_y,
+                    "origin_floor": getattr(item, "origin_floor", None),
+                }
+                for item in self.player.inventory
+            ],
+            "equipped_weapon": next(
+                (i for i, inv_item in enumerate(self.player.inventory)
+                 if inv_item is self.player.weapon),
+                None,
+            ),
         }
         with open(STATE_FILE, "w") as f:
             json.dump(data, f)
@@ -115,6 +158,13 @@ class GameState:
                 return e
         return None
 
+    def _item_at(self, x, y):
+        # Returns the first item at grid position (x, y) from the current floor's item list, or None.
+        for item in self.items:
+            if item.grid_x == x and item.grid_y == y:
+                return item
+        return None
+
     def apply_key(self, key):
         # Processes a single keypress (WASD) and updates movement, combat, or floor transitions accordingly.
         key = key.lower()
@@ -128,6 +178,13 @@ class GameState:
                 print("Blocked by a wall.")
             else:
                 self.player.move("forward" if key == "w" else "backward")
+                while True:
+                    item = self._item_at(*self.player.location)
+                    if item is None:
+                        break
+                    item.origin_floor = self.floor_index
+                    self.player.pick_up(item)
+                    self.items.remove(item)
                 stairs = self.stairs
                 if stairs and self.player.location == stairs:
                     next_index = self.floor_index + 1

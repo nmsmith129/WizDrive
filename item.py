@@ -22,6 +22,11 @@ class Item(pygame.sprite.Sprite):
         self.image.fill((220, 190, 50))
         self.rect = self.image.get_rect(topleft=(grid_x * TILE_SIZE, grid_y * TILE_SIZE))
 
+    @property
+    def strength(self) -> int:
+        # Returns the weapon attack bonus stored in effect, or 0 for non-weapon items.
+        return self.effect.get("strength", 0)
+
     def __str__(self):
         # Returns a string summary of the item's name, category, value, and description.
         return f"{self.name} [{self.category}] (Value: {self.value}) - {self.description}"

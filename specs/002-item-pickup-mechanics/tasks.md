@@ -19,8 +19,8 @@ sub-agent**. Both run **Sonnet**. Setup/infra tasks are orchestrator work.
 
 ## Phase 1: Setup (Shared Infrastructure)
 
-- [ ] T001 Create `specs/002-item-pickup-mechanics/` artifacts (spec, plan, tasks) — orchestrator
-- [ ] T002 Write `tests/fixtures/legacy_save_v1.json` — a valid v1 save (`schema_version: 1`, all current fields, no `inventory`/`equipped_weapon`, `"dungeon": "DebugMapLoader.dngn"`, `"enemies": []`) — orchestrator
+- [x] T001 Create `specs/002-item-pickup-mechanics/` artifacts (spec, plan, tasks) — orchestrator
+- [x] T002 Write `tests/fixtures/legacy_save_v1.json` — a valid v1 save (`schema_version: 1`, all current fields, no `inventory`/`equipped_weapon`, `"dungeon": "DebugMapLoader.dngn"`, `"enemies": []`) — orchestrator
 
 **Checkpoint**: Fixture committed — US3 backward-compat test can be written.
 
@@ -32,15 +32,15 @@ sub-agent**. Both run **Sonnet**. Setup/infra tasks are orchestrator work.
 
 ### Tests for User Story 1 (REQUIRED) ⚠️ — TEST-AGENT writes first, confirms FAIL
 
-- [ ] T003 [US1] [TEST-AGENT] In `tests/test_item_pickup.py`: stepping onto a tile with one item adds it to `player.inventory` and removes it from `state.items`; the tile is then empty.
-- [ ] T004 [US1] [TEST-AGENT] Multiple items on one tile are all collected in a single step.
-- [ ] T005 [US1] [TEST-AGENT] Stepping onto an empty tile leaves `player.inventory` unchanged.
-- [ ] T006 [US1] [TEST-AGENT] Moving into an enemy tile triggers combat, the player does not move, and no item is collected (item-and-enemy co-located).
+- [x] T003 [US1] [TEST-AGENT] In `tests/test_item_pickup.py`: stepping onto a tile with one item adds it to `player.inventory` and removes it from `state.items`; the tile is then empty.
+- [x] T004 [US1] [TEST-AGENT] Multiple items on one tile are all collected in a single step.
+- [x] T005 [US1] [TEST-AGENT] Stepping onto an empty tile leaves `player.inventory` unchanged.
+- [x] T006 [US1] [TEST-AGENT] Moving into an enemy tile triggers combat, the player does not move, and no item is collected (item-and-enemy co-located).
 
 ### Implementation for User Story 1 — IMPL-AGENT
 
-- [ ] T007 [US1] [IMPL-AGENT] Add `self.inventory: list = []` to `Player.__init__` and a `Player.pick_up(item)` that appends to inventory (equip logic added in US2).
-- [ ] T008 [US1] [IMPL-AGENT] Add `GameState._item_at(x, y)` mirroring `_enemy_at`; in `apply_key()`'s successful-move branch, collect every item at the new location (`pick_up` + stamp `origin_floor` + `self.items.remove`) before the stairs check.
+- [x] T007 [US1] [IMPL-AGENT] Add `self.inventory: list = []` to `Player.__init__` and a `Player.pick_up(item)` that appends to inventory (equip logic added in US2).
+- [x] T008 [US1] [IMPL-AGENT] Add `GameState._item_at(x, y)` mirroring `_enemy_at`; in `apply_key()`'s successful-move branch, collect every item at the new location (`pick_up` + stamp `origin_floor` + `self.items.remove`) before the stairs check.
 
 **Checkpoint**: US1 tests pass; existing suite green.
 
@@ -52,14 +52,14 @@ sub-agent**. Both run **Sonnet**. Setup/infra tasks are orchestrator work.
 
 ### Tests for User Story 2 (REQUIRED) ⚠️ — TEST-AGENT writes first, confirms FAIL
 
-- [ ] T009 [P] [US2] [TEST-AGENT] `Item.strength` returns `effect["strength"]` for a weapon and `0` when absent.
-- [ ] T010 [US2] [TEST-AGENT] Picking up a weapon (category `weapon`, strength bonus) sets `player.weapon`; a weaker or non-weapon item does not replace a better equipped weapon.
-- [ ] T011 [US2] [TEST-AGENT] Under the `always_hit` fixture, `strike()` damage after equipping equals base strength + weapon strength.
+- [x] T009 [P] [US2] [TEST-AGENT] `Item.strength` returns `effect["strength"]` for a weapon and `0` when absent.
+- [x] T010 [US2] [TEST-AGENT] Picking up a weapon (category `weapon`, strength bonus) sets `player.weapon`; a weaker or non-weapon item does not replace a better equipped weapon.
+- [x] T011 [US2] [TEST-AGENT] Under the `always_hit` fixture, `strike()` damage after equipping equals base strength + weapon strength.
 
 ### Implementation for User Story 2 — IMPL-AGENT
 
-- [ ] T012 [US2] [IMPL-AGENT] Add read-only `Item.strength` property → `self.effect.get("strength", 0)`.
-- [ ] T013 [US2] [IMPL-AGENT] Extend `Player.pick_up` to equip the item when `item.category == "weapon"` and `item.strength` beats the equipped weapon's; print pickup/equip messages.
+- [x] T012 [US2] [IMPL-AGENT] Add read-only `Item.strength` property → `self.effect.get("strength", 0)`.
+- [x] T013 [US2] [IMPL-AGENT] Extend `Player.pick_up` to equip the item when `item.category == "weapon"` and `item.strength` beats the equipped weapon's; print pickup/equip messages.
 
 **Checkpoint**: US2 tests pass; US1 + existing suite green.
 
@@ -71,17 +71,17 @@ sub-agent**. Both run **Sonnet**. Setup/infra tasks are orchestrator work.
 
 ### Tests for User Story 3 (REQUIRED) ⚠️ — TEST-AGENT writes first, confirms FAIL
 
-- [ ] T014 [P] [US3] [TEST-AGENT] `SCHEMA_VERSION == 2` and `save()` writes `schema_version: 2`.
-- [ ] T015 [US3] [TEST-AGENT] Inventory + equipped weapon round-trip through `save()` → `from_save()`.
-- [ ] T016 [US3] [TEST-AGENT] A collected item does not reappear on its origin floor after reload.
-- [ ] T017 [US3] [TEST-AGENT] Loading `tests/fixtures/legacy_save_v1.json` yields an empty inventory and `weapon is None`, with other state intact.
-- [ ] T018 [US3] [TEST-AGENT] A save with `schema_version: 3` is rejected with `ValueError`.
+- [x] T014 [P] [US3] [TEST-AGENT] `SCHEMA_VERSION == 2` and `save()` writes `schema_version: 2`.
+- [x] T015 [US3] [TEST-AGENT] Inventory + equipped weapon round-trip through `save()` → `from_save()`.
+- [x] T016 [US3] [TEST-AGENT] A collected item does not reappear on its origin floor after reload.
+- [x] T017 [US3] [TEST-AGENT] Loading `tests/fixtures/legacy_save_v1.json` yields an empty inventory and `weapon is None`, with other state intact.
+- [x] T018 [US3] [TEST-AGENT] A save with `schema_version: 3` is rejected with `ValueError`.
 
 ### Implementation for User Story 3 — IMPL-AGENT
 
-- [ ] T019 [US3] [IMPL-AGENT] Bump `SCHEMA_VERSION = 2`; `from item import Item`.
-- [ ] T020 [US3] [IMPL-AGENT] `save()`: serialize `inventory` (name, value, description, category, effect, grid_x, grid_y, origin_floor) and `equipped_weapon` (inventory index or `None`).
-- [ ] T021 [US3] [IMPL-AGENT] `from_save()`: rebuild inventory `Item`s, restore `player.weapon` from `equipped_weapon`, and remove each collected item from its `origin_floor`'s item list (match by grid_x, grid_y, name). Keep the newer-version guard.
+- [x] T019 [US3] [IMPL-AGENT] Bump `SCHEMA_VERSION = 2`; `from item import Item`.
+- [x] T020 [US3] [IMPL-AGENT] `save()`: serialize `inventory` (name, value, description, category, effect, grid_x, grid_y, origin_floor) and `equipped_weapon` (inventory index or `None`).
+- [x] T021 [US3] [IMPL-AGENT] `from_save()`: rebuild inventory `Item`s, restore `player.weapon` from `equipped_weapon`, and remove each collected item from its `origin_floor`'s item list (match by grid_x, grid_y, name). Keep the newer-version guard.
 
 **Checkpoint**: All US3 tests pass; full suite green.
 
@@ -89,8 +89,8 @@ sub-agent**. Both run **Sonnet**. Setup/infra tasks are orchestrator work.
 
 ## Phase 5: Polish & Cross-Cutting
 
-- [ ] T022 [P] Run `python -m pytest tests/ -v` — zero regressions — orchestrator
-- [ ] T023 [P] Update `CLAUDE.md` (combat weapon slot, item pickup flow, schema v2), `SECOND_ROADMAP.md` (pickup/inventory/weapon-equip markers), and `MEMORY.md` (design entry) — orchestrator
+- [x] T022 [P] Run `python -m pytest tests/ -v` — zero regressions — orchestrator
+- [x] T023 [P] Update `CLAUDE.md` (combat weapon slot, item pickup flow, schema v2), `SECOND_ROADMAP.md` (pickup/inventory/weapon-equip markers), and `MEMORY.md` (design entry) — orchestrator
 
 ---
 

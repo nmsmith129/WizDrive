@@ -29,7 +29,7 @@ Items are ordered so that every feature appears after all features it depends on
 - [p] Level system
 - [p] Attribute system (Strength, Intelligence, Dexterity, Constitution, Wisdom, Charisma)
 - [ ] Skill system
-- [ ] Player inventory system
+- [p] Player inventory system
 
 ### Assets — Sprites & Textures
 - [ ] Wall textures
@@ -49,11 +49,11 @@ Items are ordered so that every feature appears after all features it depends on
 ### Core Gameplay Mechanics
 - [ ] Movement validation (collision detection with walls)
 - [ ] Item effects and properties
-- [ ] Item pickup mechanics
-- [ ] Item use/equip system
-- [ ] Equipment slots (weapon, armor, etc.)
+- [x] Item pickup mechanics
+- [p] Item use/equip system
+- [p] Equipment slots (weapon, armor, etc.)
 - [ ] Equipment system (weapon, armor, accessories)
-- [ ] Item stats and bonuses
+- [p] Item stats and bonuses
 - [ ] Equipment weight/carrying capacity
 - [ ] Item management (drop, sell, trade)
 
@@ -124,7 +124,7 @@ Items are ordered so that every feature appears after all features it depends on
 
 ### Save / Load System
 - [x] Save file format (JSON or binary)
-- [x] Schema versioning (legacy v0 loads; new saves stamped v1; v2+ rejected with clear error)
+- [x] Schema versioning (legacy v0/v1 load; new saves stamped v2 with inventory; v3+ rejected with clear error)
 - [x] Save game functionality
 - [x] Load game functionality
 - [ ] Multiple save slots

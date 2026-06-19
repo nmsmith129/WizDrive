@@ -140,10 +140,19 @@ When the player moves (`w`/`s`) into a tile occupied by an enemy, `GameState._do
 
 ### Strike mechanic (`Player.strike(enemy)`)
 - Hit roll: `random.random() < self.attack` (default 50% chance)
-- On hit: damage = `self.strength + self.weapon.strength` (weapon is `None` stub, treated as 0)
+- On hit: damage = `self.strength + self.weapon.strength`. `self.weapon` is `None` until a weapon is picked up; `Item.strength` is a property returning `effect["strength"]` (0 for non-weapons), so any `Item` satisfies the weapon-slot contract.
 - On miss: no damage dealt
 - Either way, the enemy counter-attacks: `max(1, enemy.attack - self.defense)` damage to player
 - Returns `True` on kill
+
+## Item Pickup & Inventory
+
+When the player moves (`w`/`s`) onto an open tile, `GameState.apply_key()` collects **every** item on that tile (after the move, before the stairs check):
+- Each item is stamped with `origin_floor`, passed to `Player.pick_up(item)`, and removed from the live floor item list (so both visualizers stop drawing it — no visualizer code is involved).
+- `Player.pick_up()` appends to `Player.inventory` and **auto-equips** the item when `item.category == "weapon"` and its `strength` exceeds the currently equipped weapon's.
+- Combat takes precedence: moving into an enemy tile triggers `strike()` and the player does not advance, so no pickup happens there.
+
+Persistence: `save()` writes `inventory` (each item's name/value/description/category/effect/grid_x/grid_y/origin_floor) and `equipped_weapon` (the inventory index of the equipped item, or `null`). `from_save()` rebuilds the `Item`s, restores `weapon` as the same inventory object, and removes each collected item from its `origin_floor` so it does not respawn. This bumped `SCHEMA_VERSION` to **2**; legacy v0/v1 saves load with an empty inventory.
 
 ## Floor Transitions
 

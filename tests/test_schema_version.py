@@ -60,11 +60,11 @@ def test_save_includes_schema_version(save_file):
     assert "schema_version" in data
 
 
-def test_save_schema_version_is_1(save_file):
+def test_save_schema_version_is_2(save_file):
     _make_state().save()
     with open(save_file) as f:
         data = json.load(f)
-    assert data["schema_version"] == 1
+    assert data["schema_version"] == 2
 
 
 # ── User Story 3: newer-version saves are rejected ──────────────────────────
@@ -73,7 +73,7 @@ def test_newer_version_save_raises(tmp_path, monkeypatch):
     path = str(tmp_path / "future_save.json")
     monkeypatch.setattr(gs, "STATE_FILE", path)
     payload = {
-        "schema_version": 2,
+        "schema_version": 3,
         "dungeon": "DebugMapLoader.dngn",
         "floor": 0,
         "x": 1,
@@ -87,6 +87,6 @@ def test_newer_version_save_raises(tmp_path, monkeypatch):
     }
     with open(path, "w") as f:
         json.dump(payload, f)
-    with pytest.raises(ValueError, match="2") as exc_info:
+    with pytest.raises(ValueError, match="3") as exc_info:
         GameState.from_save()
-    assert "1" in str(exc_info.value)
+    assert "2" in str(exc_info.value)
