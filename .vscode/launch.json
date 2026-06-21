@@ -5,9 +5,10 @@
       "name": "WizDrive: Run (liveTestOne)",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/wiz_drive_main.py",
-      "args": ["liveTestOne.dngn"],
+      "module": "wiz_drive.wiz_drive_main",
+      "args": ["assets/maps/liveTestOne.dngn"],
       "cwd": "${workspaceFolder}",
+      "env": { "PYTHONPATH": "${workspaceFolder}/src" },
       "console": "integratedTerminal"
     }
   ]

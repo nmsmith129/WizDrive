@@ -1,4 +1,4 @@
-from item import get_item_stats, ITEM_TYPES
+from wiz_drive.item import get_item_stats, ITEM_TYPES
 
 
 DEFAULT_STATS = {"value": 1, "category": "misc", "description": ""}

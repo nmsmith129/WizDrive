@@ -77,31 +77,12 @@ def run_text(state):
             )
 
 
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python wiz_drive_main.py <file.dngn>")
-        sys.exit(1)
-
-    path = sys.argv[1]
-    if not path.endswith(".dngn"):
-        print(f"Error: '{path}' is not a .dngn file.")
-        sys.exit(1)
-
-    _, _, floors = load_map_file(path)
-    state = GameState.new(path, floors)
-
-    if VISUALIZER == 0:
-        run_pygame(state)
-    elif VISUALIZER == 1:
-        run_text(state)
-
-
 def main(argv=None):
     if argv is None:
         argv = sys.argv[1:]
 
     if len(argv) < 1:
-        print("Usage: python wiz_drive_main.py <file.dngn>")
+        print("Usage: python -m wiz_drive.wiz_drive_main <file.dngn>")
         sys.exit(1)
 
     path = argv[0]

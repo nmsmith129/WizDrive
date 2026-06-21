@@ -72,7 +72,7 @@ Enemy XP source: `map_loader` always reads xp from `get_stats(name)["xp"]`, even
 
 ### project-attribute-system
 Player six-attribute system (attack/strength/defense/max_hp/intelligence/mana) — design, combat wiring, persistence. (type: project)
-**Why:** User wanted Wizardry-style player stats wired into the only live mechanic (combat), fulfilling SECOND_ROADMAP.md's "Attribute system" item (implemented 2026-06-03). The classic six D&D stats were discarded for six custom player-only attributes. Enemies deliberately get no attributes — they keep their `ENEMY_TYPES` stat block.
+**Why:** User wanted Wizardry-style player stats wired into the only live mechanic (combat), fulfilling docs/SECOND_ROADMAP.md's "Attribute system" item (implemented 2026-06-03). The classic six D&D stats were discarded for six custom player-only attributes. Enemies deliberately get no attributes — they keep their `ENEMY_TYPES` stat block.
 **How to apply:** When touching combat, player init, or save/load, account for these.
 
 Attributes (all on `Player`, `player.py`):

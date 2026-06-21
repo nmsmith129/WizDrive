@@ -19,5 +19,5 @@ def pygame_init():
 
 @pytest.fixture(scope="session", autouse=True)
 def disable_map_loader_debug():
-    import map_loader
+    from wiz_drive import map_loader
     map_loader.debug = False

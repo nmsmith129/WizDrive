@@ -1,8 +1,8 @@
 import json
 import pathlib
 import pytest
-import game_state as gs
-from game_state import GameState
+import wiz_drive.game_state as gs
+from wiz_drive.game_state import GameState
 
 FIXTURES = pathlib.Path(__file__).parent / "fixtures"
 
@@ -20,7 +20,7 @@ def save_file(tmp_path, monkeypatch):
 
 
 def _make_state(dungeon="d.dngn", floor=0, player=None, enemies=None):
-    from player import Player
+    from wiz_drive.player import Player
     if player is None:
         player = Player("Hero")
         player.location = (1, 1)

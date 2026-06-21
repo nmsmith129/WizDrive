@@ -1,7 +1,7 @@
 import os
 import textwrap
 import pytest
-from map_loader import validate_map_file
+from wiz_drive.map_loader import validate_map_file
 
 
 VALID_MAP = textwrap.dedent("""\
@@ -175,11 +175,11 @@ class TestValidateMapFileErrors:
         assert any("floor definitions" in e for e in errors)
 
     def test_live_test_one_is_valid(self):
-        path = os.path.join(REPO_ROOT, "liveTestOne.dngn")
+        path = os.path.join(REPO_ROOT, "assets", "maps", "liveTestOne.dngn")
         valid, errors = validate_map_file(path)
         assert valid is True, f"liveTestOne.dngn validation failed: {errors}"
 
     def test_debug_map_loader_is_valid(self):
-        path = os.path.join(REPO_ROOT, "DebugMapLoader.dngn")
+        path = os.path.join(REPO_ROOT, "assets", "maps", "DebugMapLoader.dngn")
         valid, errors = validate_map_file(path)
         assert valid is True, f"DebugMapLoader.dngn validation failed: {errors}"

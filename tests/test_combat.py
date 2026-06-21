@@ -1,10 +1,10 @@
 import types
 
 import pytest
-import player as player_module
-from game_state import GameState
-from player import Player
-from enemy import Enemy
+import wiz_drive.player as player_module
+from wiz_drive.game_state import GameState
+from wiz_drive.player import Player
+from wiz_drive.enemy import Enemy
 
 
 @pytest.fixture

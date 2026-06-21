@@ -1,5 +1,5 @@
 import pytest
-from enemy import get_stats, ENEMY_TYPES
+from wiz_drive.enemy import get_stats, ENEMY_TYPES
 
 
 KNOWN_ENEMIES = [

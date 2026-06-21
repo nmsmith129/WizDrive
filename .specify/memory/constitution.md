@@ -223,7 +223,7 @@ escalation preserves an escape hatch for genuinely hard problems.
 - **Merge gate:** The full pytest suite (`python -m pytest tests/ -v`) MUST pass
   before any merge into `main`.
 - **Roadmap order:** New features SHOULD respect the dependency ordering captured in
-  `SECOND_ROADMAP.md` — do not build a feature ahead of its prerequisites. *(Advisory.)*
+  `docs/SECOND_ROADMAP.md` — do not build a feature ahead of its prerequisites. *(Advisory.)*
 
 ## Definition of Done
 
@@ -237,7 +237,7 @@ A feature is Done only when ALL of the following hold:
 - [ ] Any new runtime external dependency is declared in `requirements.txt`.
 - [ ] Persistence changes carry a `schema_version` update and a save regression test
       (Principle V), where applicable.
-- [ ] Documentation is updated — `CLAUDE.md` and the relevant `SECOND_ROADMAP.md`
+- [ ] Documentation is updated — `CLAUDE.md` and the relevant `docs/SECOND_ROADMAP.md`
       markers.
 - [ ] Work is merged into `working` (and into `main` at milestones).
 

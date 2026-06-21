@@ -1,5 +1,5 @@
 import pytest
-from player import Player
+from wiz_drive.player import Player
 
 
 class TestPlayerInit:

@@ -1,6 +1,6 @@
 import textwrap
 import pytest
-from map_loader import load_map_text, load_map_file
+from wiz_drive.map_loader import load_map_text, load_map_file
 
 
 MINIMAL_3x3 = textwrap.dedent("""\

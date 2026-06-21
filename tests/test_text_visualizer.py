@@ -1,7 +1,7 @@
 import pytest
-from text_visualizer import render_floor
-from enemy import Enemy
-from item import Item
+from wiz_drive.text_visualizer import render_floor
+from wiz_drive.enemy import Enemy
+from wiz_drive.item import Item
 
 
 def _grid():

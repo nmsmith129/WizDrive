@@ -18,14 +18,14 @@ All 18 existing tests plus the 4 new schema-version tests must pass.
 
 ```powershell
 python -c "
-import wiz_drive_main  # or however the game initialises state
+import wiz_drive.wiz_drive_main  # or however the game initialises state
 # Alternatively, load a map and save directly:
-from map_loader import load_map_file
-from game_state import GameState
-_, _, floors = load_map_file('DebugMapLoader.dngn')
-from player import Player
+from wiz_drive.map_loader import load_map_file
+from wiz_drive.game_state import GameState
+_, _, floors = load_map_file('assets/maps/DebugMapLoader.dngn')
+from wiz_drive.player import Player
 p = Player('Hero')
-gs = GameState('DebugMapLoader.dngn', floors, 0, p, [])
+gs = GameState('assets/maps/DebugMapLoader.dngn', floors, 0, p, [])
 gs.save()
 import json, pathlib
 data = json.loads(pathlib.Path('game_state.json').read_text())
@@ -43,12 +43,12 @@ import json, pathlib, pygame
 pygame.init()
 # Write a legacy save (no schema_version)
 legacy = {
-    'dungeon': 'DebugMapLoader.dngn',
+    'dungeon': 'assets/maps/DebugMapLoader.dngn',
     'floor': 0, 'x': 1, 'y': 1, 'facing': 'north',
     'hp': 10, 'mp': 1, 'enemies': []
 }
 pathlib.Path('game_state.json').write_text(json.dumps(legacy))
-from game_state import GameState
+from wiz_drive.game_state import GameState
 gs = GameState.from_save()
 print('Loaded OK. Player HP:', gs.player.hp)  # expect: 10
 "
@@ -64,12 +64,12 @@ import json, pathlib, pygame
 pygame.init()
 future_save = {
     'schema_version': 99,
-    'dungeon': 'DebugMapLoader.dngn',
+    'dungeon': 'assets/maps/DebugMapLoader.dngn',
     'floor': 0, 'x': 1, 'y': 1, 'facing': 'north',
     'hp': 10, 'mp': 1, 'enemies': []
 }
 pathlib.Path('game_state.json').write_text(json.dumps(future_save))
-from game_state import GameState
+from wiz_drive.game_state import GameState
 try:
     gs = GameState.from_save()
     print('ERROR: should have raised ValueError')

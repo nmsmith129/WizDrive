@@ -10,7 +10,7 @@ from .map_visualizer import run_debug_viewer
 from .player import Player
 
 if len(sys.argv) < 2:
-    print("Error: no dungeon file specified. Usage: python test_visualizer.py <file.dngn>")
+    print("Error: no dungeon file specified. Usage: python -m wiz_drive.test_visualizer <file.dngn>")
     sys.exit(1)
 
 def main(argv=None):
@@ -18,7 +18,7 @@ def main(argv=None):
         argv = sys.argv[1:]
 
     if len(argv) < 1:
-        print("Error: no dungeon file specified. Usage: python test_visualizer.py <file.dngn>")
+        print("Error: no dungeon file specified. Usage: python -m wiz_drive.test_visualizer <file.dngn>")
         sys.exit(1)
 
     path = argv[0]

@@ -57,7 +57,7 @@ def render_floor(floor, floor_num: int) -> None:
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python text_visualizer.py <file.dngn>")
+        print("Usage: python -m wiz_drive.text_visualizer <file.dngn>")
         sys.exit(1)
 
     path = sys.argv[1]
@@ -74,7 +74,7 @@ def main(argv=None):
         argv = sys.argv[1:]
 
     if len(argv) < 1:
-        print("Usage: python text_visualizer.py <file.dngn>")
+        print("Usage: python -m wiz_drive.text_visualizer <file.dngn>")
         sys.exit(1)
 
     path = argv[0]

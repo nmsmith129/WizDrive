@@ -1,9 +1,9 @@
 import json
 import pytest
-import game_state as gs
-from game_state import GameState
-from player import Player
-from enemy import Enemy
+import wiz_drive.game_state as gs
+from wiz_drive.game_state import GameState
+from wiz_drive.player import Player
+from wiz_drive.enemy import Enemy
 
 
 @pytest.fixture

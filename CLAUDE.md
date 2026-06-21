@@ -14,9 +14,25 @@ WizDrive is a Python/Pygame dungeon crawler inspired by Wizardry. The project is
 
 ## Running the Game
 
+All source lives in the `wiz_drive` package under [`src/`](src/wiz_drive/), so run
+modules with `-m` and `src` on the path (run from the repo root):
+
+```bash
+# bash
+PYTHONPATH=src python -m wiz_drive.wiz_drive_main assets/maps/liveTestOne.dngn
+```
+```powershell
+# PowerShell
+$env:PYTHONPATH = "src"; python -m wiz_drive.wiz_drive_main assets/maps/liveTestOne.dngn
+```
+
+The VS Code launch config **"WizDrive: Run (liveTestOne)"** in
+[`.vscode/launch.json`](.vscode/launch.json) does this for you.
+
 ### Visualizer Modes
 
-The active visualizer is controlled by the `VISUALIZER` constant at the top of `wiz_drive_main.py`:
+The active visualizer is controlled by the `VISUALIZER` constant at the top of
+[`wiz_drive_main.py`](src/wiz_drive/wiz_drive_main.py):
 
 | Value | Mode | Notes |
 |-------|------|-------|
@@ -25,24 +41,24 @@ The active visualizer is controlled by the `VISUALIZER` constant at the top of `
 
 ### Pygame mode (VISUALIZER = 0, default)
 ```bash
-python wiz_drive_main.py liveTestOne.dngn
+PYTHONPATH=src python -m wiz_drive.wiz_drive_main assets/maps/liveTestOne.dngn
 # Controls: W forward, S backward, A turn left, D turn right, Q quit
 ```
 
 ### Text mode (VISUALIZER = 1)
 ```bash
-python wiz_drive_main.py liveTestOne.dngn
+PYTHONPATH=src python -m wiz_drive.wiz_drive_main assets/maps/liveTestOne.dngn
 # Real-time keypresses (Windows-only msvcrt): W/S/A/D to move, Q to quit
 ```
 
 ### Text visualizer (standalone, read-only)
 ```bash
-python text_visualizer.py liveTestOne.dngn
+PYTHONPATH=src python -m wiz_drive.text_visualizer assets/maps/liveTestOne.dngn
 ```
 
 ### Map loader (standalone, for inspection/debugging)
 ```bash
-python map_loader.py liveTestOne.dngn
+PYTHONPATH=src python -m wiz_drive.map_loader assets/maps/liveTestOne.dngn
 ```
 
 ---
@@ -169,23 +185,23 @@ Run the full test suite with:
 python -m pytest tests/ -v
 ```
 
-Manual testing:
+Manual testing (run from the repo root with `src` on the path):
 ```bash
 # Validate a dungeon file:
-python map_loader.py DebugMapLoader.dngn
+PYTHONPATH=src python -m wiz_drive.map_loader assets/maps/DebugMapLoader.dngn
 
 # Render a dungeon as ASCII:
-python text_visualizer.py liveTestOne.dngn
+PYTHONPATH=src python -m wiz_drive.text_visualizer assets/maps/liveTestOne.dngn
 
 # Open the pygame debug viewer (requires a display):
-python test_visualizer.py liveTestOne.dngn
+PYTHONPATH=src python -m wiz_drive.test_visualizer assets/maps/liveTestOne.dngn
 ```
 
 When adding new `.dngn` parser features, test both `load_map_file` and `validate_map_file` paths, and exercise `load_map_text` for in-memory cases.
 
 ---
 
-## Next Priorities (from SECOND_ROADMAP.md)
+## Next Priorities (from [docs/SECOND_ROADMAP.md](docs/SECOND_ROADMAP.md))
 
 1. Stairs/portals for level transitions *(partially implemented)*
 2. Movement collision validation surfaced in all visualizers
