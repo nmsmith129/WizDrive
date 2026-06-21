@@ -169,7 +169,7 @@ Also handled in `GameState.apply_key()`: stepping onto a `STAIRS` tile (after a 
 
 ## Coding Conventions
 
-- **Python 3.11+**, no virtual-environment setup checked in; runtime external dependencies must be declared in `requirements.txt` (test-only dependencies such as `pytest` are exempt).
+- **Python 3.11+**, no virtual-environment setup checked in; runtime external dependencies must be declared in `pyproject.toml` under `[project.dependencies]` (test-only dependencies such as `pytest` go in the `dev` optional-dependency group and are exempt).
 - **Type hints** used throughout. Use `from __future__ import annotations` for forward references.
 - **Error messages** use `!r` (repr) formatting for untrusted/user-supplied values.
 - **`map_loader.debug`** is a module-level bool. Set it to `False` in every entry-point file before calling any loader function. Never leave it `True` in committed code that runs as part of the game.

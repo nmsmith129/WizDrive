@@ -1,6 +1,33 @@
 <!--
 SYNC IMPACT REPORT
 ==================
+Version change: 1.3.1 → 2.0.0
+Bump rationale: MAJOR — backward-incompatible redefinition of an existing governance
+constraint. The mandated dependency-declaration artifact changes from requirements.txt
+to pyproject.toml, and requirements.txt is removed from the repository. A repository
+that was compliant under 1.3.1 (requirements.txt present, declaring runtime deps) is no
+longer compliant, which the versioning policy classifies as a backward-incompatible
+change.
+  - Technology & Architecture Constraints (Runtime): runtime external dependencies MUST
+    now be declared in pyproject.toml ([project.dependencies]); test-only dependencies
+    (e.g. pytest) belong in an optional-dependencies group and remain exempt.
+  - Definition of Done: dependency-declaration item now points at pyproject.toml.
+
+Principles:
+  I–VI. Unchanged.
+
+Added sections: none
+Removed sections: none
+
+Templates requiring updates:
+  ✅ .specify/templates/plan-template.md  (Constraints gate: requirements.txt → pyproject.toml)
+
+Follow-up TODOs: none
+-->
+
+<!--
+SYNC IMPACT REPORT
+==================
 Version change: 1.3.0 → 1.3.1
 Bump rationale: PATCH — clarification of dependency policy: test-only dependencies
 (e.g. pytest) are exempt from the requirements.txt declaration rule. Only runtime
@@ -192,9 +219,12 @@ escalation preserves an escape hatch for genuinely hard problems.
 ## Technology & Architecture Constraints
 
 - **Runtime:** Python 3.11+. Dependencies beyond `pygame` are permitted. Every runtime
-  external dependency MUST be declared in `requirements.txt` at the repository root;
-  test-only dependencies (e.g. `pytest`) are exempt from this requirement. Adding a new
-  runtime dependency MUST be justified in the feature plan.
+  external dependency MUST be declared in `pyproject.toml` (`[project.dependencies]`) at
+  the repository root; test-only dependencies (e.g. `pytest`) belong in an
+  optional-dependencies group (e.g. `[project.optional-dependencies].dev`) and are exempt
+  from the runtime-declaration requirement. `pyproject.toml` MUST also set
+  `requires-python = ">=3.11"`. Adding a new runtime dependency MUST be justified in the
+  feature plan.
 - **Target platforms:** Windows and Linux. Platform-specific code MUST be isolated and
   provide a path for both. The text visualizer's real-time key input uses `msvcrt`,
   which is Windows-only; this is acknowledged technical debt and MUST gain a Linux
@@ -234,7 +264,7 @@ A feature is Done only when ALL of the following hold:
 - [ ] The full pytest suite passes (`python -m pytest tests/ -v`).
 - [ ] The plan's Constitution Check gate passed; any deviation is justified in the
       plan's Complexity Tracking.
-- [ ] Any new runtime external dependency is declared in `requirements.txt`.
+- [ ] Any new runtime external dependency is declared in `pyproject.toml`.
 - [ ] Persistence changes carry a `schema_version` update and a save regression test
       (Principle V), where applicable.
 - [ ] Documentation is updated — `CLAUDE.md` and the relevant `docs/SECOND_ROADMAP.md`
@@ -267,4 +297,4 @@ the dependent templates listed in the Sync Impact Report.
 - **Runtime guidance:** Day-to-day development guidance lives in the repository-root
   `CLAUDE.md`.
 
-**Version**: 1.3.1 | **Ratified**: 2026-06-07 | **Last Amended**: 2026-06-08
+**Version**: 2.0.0 | **Ratified**: 2026-06-07 | **Last Amended**: 2026-06-21

@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wizdrive"
+version = "0.1.0"
+description = "A Python/Pygame dungeon crawler inspired by Wizardry."
+readme = "CLAUDE.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [{ name = "nmsmith129", email = "nmsmith129@gmail.com" }]
+# Runtime dependencies — single source of truth (Constitution: Technology &
+# Architecture Constraints). Test-only deps go under optional-dependencies.dev.
+dependencies = [
+    "pygame>=2.5.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.0.3",
+]
+
+[project.scripts]
+# After `pip install -e .` you can run the game without setting PYTHONPATH:
+#   wizdrive assets/maps/liveTestOne.dngn
+wizdrive = "wiz_drive.wiz_drive_main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

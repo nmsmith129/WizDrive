@@ -1,8 +1,0 @@
-# WizDrive dependencies — every external dependency is declared here
-# (Constitution v1.3.0, Technology & Architecture Constraints).
-
-# Runtime
-pygame>=2.5.2
-
-# Dev / test
-pytest>=9.0.3

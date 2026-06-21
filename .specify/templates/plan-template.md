@@ -59,7 +59,7 @@ Mark each gate PASS / FAIL (justify any FAIL in Complexity Tracking):
       testing to sub-agents (orchestrator only plans/reviews); test and implementation work go
       to separate sub-agents; sub-agents run Sonnet by default (Opus only with explicit prior
       user permission, recorded in Complexity Tracking).
-- [ ] **Constraints**: Any new external dependency is declared in `requirements.txt`; new
+- [ ] **Constraints**: Any new external dependency is declared in `pyproject.toml`; new
       platform-specific code provides both a Windows and a Linux path.
 
 ## Project Structure
