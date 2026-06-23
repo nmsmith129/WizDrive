@@ -8,7 +8,8 @@ TILE_SIZE = 32
 
 class Item(pygame.sprite.Sprite):
     def __init__(self, name: str, value: int, description: str, grid_x: int = 0, grid_y: int = 0,
-                 category: str = "misc", effect: dict[str, int] | None = None):
+                 category: str = "misc", effect: dict[str, int] | None = None,
+                 loaded_image: pygame.Surface | None = None):
         # Initializes the item sprite with name, value, description, category, effect, and grid position.
         super().__init__()
         self.name = name
@@ -18,9 +19,11 @@ class Item(pygame.sprite.Sprite):
         self.effect = effect or {}  # category-specific bonuses, e.g. {"strength": 4} or {"heal": 15}
         self.grid_x = grid_x
         self.grid_y = grid_y
-        self.image = pygame.Surface((TILE_SIZE, TILE_SIZE))
-        self.image.fill((220, 190, 50))
-        self.rect = self.image.get_rect(topleft=(grid_x * TILE_SIZE, grid_y * TILE_SIZE))
+        if loaded_image is not None:
+            self.image = pygame.transform.scale(loaded_image, (TILE_SIZE, TILE_SIZE))
+        else:
+            self.image = pygame.Surface((TILE_SIZE, TILE_SIZE))
+            self.image.fill((220, 190, 50))
 
     def __str__(self):
         # Returns a string summary of the item's name, category, value, and description.

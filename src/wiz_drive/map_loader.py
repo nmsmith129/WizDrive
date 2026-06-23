@@ -160,7 +160,6 @@ def _parse_enemy_line(line: str, map_size: int) -> Enemy:
         print(f"  .name={enemy.name!r}, .hp={enemy.hp}, .attack={enemy.attack}, .speed={enemy.speed}")
         print(f"  .grid_x={enemy.grid_x}, .grid_y={enemy.grid_y}")
         print(f"  .image={enemy.image}, size={enemy.image.get_size()}")
-        print(f"  .rect={enemy.rect}")
         ok = (
             enemy.name == name.strip()
             and enemy.hp == hp
@@ -216,7 +215,6 @@ def _parse_item_line(line: str, map_size: int) -> Item:
         print(f"  .name={item.name!r}, .value={item.value}, .description={item.description!r}")
         print(f"  .grid_x={item.grid_x}, .grid_y={item.grid_y}")
         print(f"  .image={item.image}, size={item.image.get_size()}")
-        print(f"  .rect={item.rect}")
         ok = (
             item.name == name.strip()
             and item.value == value
