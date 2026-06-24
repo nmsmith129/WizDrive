@@ -26,3 +26,29 @@ file/line, the observation, its impact, a suggested fix, and a status.
     `image` is no longer dead state, but it still keeps the data models coupled
     to pygame (and `pygame.init()` a precondition). Full decoupling — e.g.
     moving art loading into the visualizer — remains open.
+
+### player.py — `strike()` fuses both halves of a combat round
+- **Files:** src/wiz_drive/player.py:71-95 (`Player.strike`); call site
+  src/wiz_drive/game_state.py:124-126.
+- **Finding:** `strike()` is named like a single player action but actually runs
+  an entire combat exchange: (1) player hit roll + damage, (2) enemy death
+  detection, (3) XP award, (4) level-up, (5) the **enemy's counter-attack**,
+  (6) player damage/death, (7) all narration via `print`. The enemy's turn is
+  hardcoded inside the player's method.
+- **Impact:** There is no real enemy phase. The only enemy that ever acts is the
+  single one the player walks into, and it only ever counter-attacks once. The
+  design cannot express "each enemy takes a turn" (e.g. a second adjacent enemy
+  never acts). Also mixes player progression, enemy behavior, and presentation
+  in one method.
+- **Suggested fix (later):** Restructure as a turn/round loop —
+  *player phase → resolve → enemy phase → resolve → render*:
+  - `Player`: pure attack method (roll + damage to a target, returns a result;
+    no counter-attack, no print) + a `gain_xp(n)` that handles leveling.
+  - `Enemy`: its own turn method (e.g. `act(player)` / `take_turn`).
+  - `GameState`: turn coordinator — runs the phases, awards XP on kill, removes
+    the dead, iterates living enemies.
+  - Visualizer/UI: render combat events instead of `strike()` printing them
+    (same presentation-coupling theme as the entry above).
+- **Scope:** Touches Player, Enemy, GameState, both visualizers, and the
+  `strike()`-based assertions in tests/test_combat.py.
+- **Status:** Observed, not yet decided.

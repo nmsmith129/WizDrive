@@ -9,8 +9,8 @@ Map file format:
     - Next line: player x y starting coordinates
     - Next line: initial facing (N/E/S/W or north/east/south/west)
     - Zero or more object descriptor lines (any order):
-        ENEMY|name|hp|attack|speed|x y
-        ITEM|name|value|description|x y
+        ENEMY|name|hp|attack|speed|x y      # OR ENEMY|name|x y
+        ITEM|name|value|description|x y     # OR ITEM|name|x y
 
 Example:
 Dungeon of Doom
@@ -22,8 +22,8 @@ Dungeon of Doom
 1 1 1 1 1 1 1 1 1 1
 2 3
 E
-ENEMY|Goblin|10|3|2|4 3
-ITEM|Gold Coin|5|A shiny gold coin|6 3
+ENEMY|Goblin|10|3|2|4 3                     # OR ENEMY|Goblin|4 3
+ITEM|Gold Coin|5|A shiny gold coin|6 3      # OR ITEM|Gold Coin|6 3
 
 8
 1 1 1 1 1 1 1 1
@@ -37,12 +37,11 @@ N
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List, Tuple
 
 from .enemy import Enemy, get_stats
 from .item import Item, get_item_stats
 
-debug = True  # set to True to enable diagnostic output
+debug = False  # set to True to enable diagnostic output
 
 FACING_MAP = {
     "n": "north",
@@ -56,10 +55,10 @@ FACING_MAP = {
 }
 
 # (grid[y][x]: 0=open/1=wall, player start (x, y), facing, enemies, items, stairs (x, y) or None)
-floor_data = tuple[List[List[int]], Tuple[int, int], str, List[Enemy], List[Item], Tuple[int, int] | None]
+floor_data = tuple[list[list[int]], tuple[int, int], str, list[Enemy], list[Item], tuple[int, int] | None]
 
 
-def parse_row(row_text: str, size: int) -> List[int]:
+def parse_row(row_text: str, size: int) -> list[int]:
     # Parses one grid row from the "Next S lines" section of a floor block; each token must be 0 or 1.
     if debug:
         print(f"[DEBUG] parse_row: row_text={row_text!r}, size={size}")
@@ -80,7 +79,7 @@ def parse_row(row_text: str, size: int) -> List[int]:
     return row
 
 
-def parse_player_line(line: str, map_size: int) -> Tuple[int, int]:
+def parse_player_line(line: str, map_size: int) -> tuple[int, int]:
     # Parses the "player x y" line that immediately follows the S grid rows in a floor block.
     if debug:
         print(f"[DEBUG] parse_player_line: line={line!r}, map_size={map_size}")
@@ -160,14 +159,6 @@ def _parse_enemy_line(line: str, map_size: int) -> Enemy:
         print(f"  .name={enemy.name!r}, .hp={enemy.hp}, .attack={enemy.attack}, .speed={enemy.speed}")
         print(f"  .grid_x={enemy.grid_x}, .grid_y={enemy.grid_y}")
         print(f"  .image={enemy.image}, size={enemy.image.get_size()}")
-        ok = (
-            enemy.name == name.strip()
-            and enemy.hp == hp
-            and enemy.attack == attack
-            and enemy.speed == speed
-            and enemy.grid_x == x
-            and enemy.grid_y == y
-        )
         print(f"[DEBUG] _parse_enemy_line -> data integrity check: {'PASS' if ok else 'FAIL'}")
     return enemy
 
@@ -215,13 +206,6 @@ def _parse_item_line(line: str, map_size: int) -> Item:
         print(f"  .name={item.name!r}, .value={item.value}, .description={item.description!r}")
         print(f"  .grid_x={item.grid_x}, .grid_y={item.grid_y}")
         print(f"  .image={item.image}, size={item.image.get_size()}")
-        ok = (
-            item.name == name.strip()
-            and item.value == value
-            and item.description == description.strip()
-            and item.grid_x == x
-            and item.grid_y == y
-        )
         print(f"[DEBUG] _parse_item_line -> data integrity check: {'PASS' if ok else 'FAIL'}")
     return item
 
@@ -288,9 +272,9 @@ def _parse_floor_block(lines: list[str]) -> floor_data:
     if grid[player_y][player_x] != 0:
         raise ValueError(f"Player start ({player_x}, {player_y}) is on a blocked tile")
 
-    enemies: List[Enemy] = []
-    items: List[Item] = []
-    stairs: Tuple[int, int] | None = None
+    enemies: list[Enemy] = []
+    items: list[Item] = []
+    stairs: tuple[int, int] | None = None
     for j, obj_line in enumerate(lines[3 + size:], start=1):
         if obj_line.startswith("ENEMY|"):
             enemy = _parse_enemy_line(obj_line, size)
@@ -311,7 +295,10 @@ def _parse_floor_block(lines: list[str]) -> floor_data:
             pos_parts = parts[1].strip().split()
             if len(pos_parts) != 2:
                 raise ValueError(f"STAIRS position must be 'x y', got: {parts[1]!r}")
-            sx, sy = int(pos_parts[0]), int(pos_parts[1])
+            try:
+                sx, sy = int(pos_parts[0]), int(pos_parts[1])
+            except ValueError:
+                raise ValueError(f"STAIRS position coordinates must be integers: {parts[1]!r}")
             if not (0 <= sx < size and 0 <= sy < size):
                 raise ValueError(f"STAIRS position ({sx}, {sy}) out of bounds for map size {size}")
             if grid[sy][sx] != 0:

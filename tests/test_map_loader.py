@@ -274,6 +274,13 @@ class TestStairsParsing:
         with pytest.raises(ValueError, match="out of bounds"):
             load_map_text(text)
 
+    def test_stairs_non_integer_coords_raises(self):
+        # Loader must reject non-integer STAIRS coords with the friendly message,
+        # matching validate_map_file and the ENEMY/ITEM parsers (not a raw int() crash).
+        text = OPEN_5x5 + "STAIRS|foo bar\n"
+        with pytest.raises(ValueError, match="STAIRS position coordinates must be integers"):
+            load_map_text(text)
+
     def test_no_stairs_returns_none(self):
         _, _, floors = load_map_text(OPEN_5x5)
         _, _, _, _, _, stairs = floors[0]

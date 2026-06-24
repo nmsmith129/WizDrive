@@ -1,7 +1,8 @@
 import sys
 
-# 0 = pygame visualizer
+# 0 = pygame visualizer (top-down)
 # 1 = text visualizer (terminal, real-time keypresses)
+# 2 = first-person (pygame raycaster)
 VISUALIZER = 0
 
 import pygame
@@ -16,6 +17,8 @@ if VISUALIZER == 0:
     from .map_visualizer import MapVisualizer
 elif VISUALIZER == 1:
     from .text_visualizer import render_floor
+elif VISUALIZER == 2:
+    from .first_person import FirstPersonVisualizer
 
 
 
@@ -50,6 +53,38 @@ def run_pygame(state):
             (state.grid, state.player.location, state.player.facing, state.enemies, state.items, state.stairs),
             state.player,
         )
+        pygame.display.flip()
+        clock.tick(60)
+
+    pygame.quit()
+
+
+def run_first_person(state):
+    # Runs the pygame event loop in first-person, routing WASD through the shared game
+    # state so collision, combat, and stair transitions behave exactly as in top-down mode.
+    screen = pygame.display.set_mode((640, 480))
+    pygame.display.set_caption("WizDrive — First Person")
+    visualizer = FirstPersonVisualizer(screen)
+    clock = pygame.time.Clock()
+
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_q:
+                    running = False
+                elif event.key == pygame.K_w:
+                    state.apply_key("w")
+                elif event.key == pygame.K_s:
+                    state.apply_key("s")
+                elif event.key == pygame.K_a:
+                    state.apply_key("a")
+                elif event.key == pygame.K_d:
+                    state.apply_key("d")
+
+        visualizer.draw(state.grid, state.player)
         pygame.display.flip()
         clock.tick(60)
 
@@ -97,6 +132,8 @@ def main(argv=None):
         run_pygame(state)
     elif VISUALIZER == 1:
         run_text(state)
+    elif VISUALIZER == 2:
+        run_first_person(state)
 
 
 if __name__ == "__main__":

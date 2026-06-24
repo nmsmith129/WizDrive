@@ -20,8 +20,8 @@ class Player:
         self.strength = strength  # Base melee damage, added to the equipped weapon's strength
         self.defense = defense  # Subtracted from incoming damage (floored at 1)
         self.max_hp = max_hp
-        self.intelligence = intelligence  # Spell effectiveness; consumed once spells exist
-        self.mana = mana  # Maximum mana
+        self.intelligence = intelligence  # Spell effectiveness
+        self.mana = mana  # Maximum mana; consumed once spells exist
         self.weapon = None  # Equipped weapon stub; future equipment system fills this slot
         self.hp = max_hp if hp is None else hp  # Current HP, starts full
         self.mp = mana if mp is None else mp  # Current mana, starts full

@@ -1,0 +1,63 @@
+WizDrive — First-Person View Sanity Check (VISUALIZER = 2)
+==========================================================
+
+Purpose
+-------
+Manual checklist for verifying the first-person raycaster (src/wiz_drive/first_person.py)
+once someone can drive a real pygame window. Automated checks already pass:
+  - pytest tests/  -> 176 passed
+  - headless offscreen render (SDL_VIDEODRIVER=dummy) draws a frame for all four
+    facings without error; a due-north ray from the start hits a wall at dist 0.50.
+
+How to run
+----------
+1. Set VISUALIZER = 2 in src/wiz_drive/wiz_drive_main.py (currently 0).
+2. From the repo root:
+     PowerShell:  $env:PYTHONPATH = "src"; python -m wiz_drive.wiz_drive_main assets/maps/liveTestOne.dngn
+     bash:        PYTHONPATH=src python -m wiz_drive.wiz_drive_main assets/maps/liveTestOne.dngn
+3. Controls: W/S move, A/D turn 90 degrees, Q quit. A 640x480 window opens.
+4. Revert VISUALIZER to 0 when done.
+
+Starting position on liveTestOne.dngn (floor 1)
+-----------------------------------------------
+Player start = (1, 6), facing EAST. In the internal y-up grid the player sits one
+tile in from the left wall, just below the solid top wall. Relevant tiles:
+  - North of player (the top border wall): a solid wall running the whole length.
+  - Player's row, looking east: open for ~5 tiles, then a wall at x=7.
+  - South of player: an opening immediately to the right (a passage heading south),
+    then a short wall segment a tile ahead, then alternating gaps and walls.
+
+What the FIRST frame should look like
+-------------------------------------
+General: top half ceiling (dark blue-grey), bottom half floor (dark brown), wall
+slices drawn between them. Closer walls = taller slices; faces perpendicular to the
+view (N/S faces, side=1) render darker than the others.
+
+  [ ] LEFT side of screen: a tall wall, very close (the north border wall ~0.5 tile
+      away). It is tallest at the left edge and slants shorter toward the centre —
+      the classic corridor-wall perspective. Rendered in the darker (EW) shade.
+
+  [ ] CENTRE: a SHORT wall band far away — the corridor stays open ~5-6 tiles east
+      before the wall at x=7. Lots of floor and ceiling visible between the side
+      walls and that distant end wall (a receding hallway, not a wall in your face).
+
+  [ ] RIGHT side of screen: broken, not a solid run. An opening low/near on the
+      right (the south side passage beside the player), then a wall segment a short
+      way ahead, then gaps. Expect wall slices interrupted by floor-to-ceiling gaps.
+
+Movement spot-checks
+--------------------
+  [ ] Turn A/D: view rotates in 90-degree steps; left/right map correctly (turning
+      D/right while facing east should bring the south passage to face-on).
+  [ ] W forward: the distant centre wall grows taller as you approach; stops you
+      (no crash) when you reach it.
+  [ ] Walk into the Goblin tile (5,6) or Troll (3,3): combat messages print to the
+      console — movement and combat share GameState.apply_key, so this must work.
+  [ ] Reach the STAIRS at (6,1): console prints a descend message and the floor
+      switches to the 10x10 second floor (player respawns at its start, facing N).
+
+Known limitations (intentional for this first cut)
+--------------------------------------------------
+  - Walls only. Enemies and items are NOT drawn in the 3D view yet (they still work
+    in combat, just invisible here). Sprites are future work.
+  - Flat-colour walls, no textures. No HUD overlay. 90-degree-step turning only.
