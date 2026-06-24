@@ -52,3 +52,36 @@ file/line, the observation, its impact, a suggested fix, and a status.
 - **Scope:** Touches Player, Enemy, GameState, both visualizers, and the
   `strike()`-based assertions in tests/test_combat.py.
 - **Status:** Observed, not yet decided.
+
+### map_loader.py — large `if debug:` instrumentation block, dead in gameplay
+- **Files:** src/wiz_drive/map_loader.py — 44 `if debug:` sites throughout.
+- **Finding:** Every parse/validate helper is wrapped in verbose `if debug:`
+  diagnostic prints. With the module-level `debug = False` default (and every
+  entry point keeping it false per CLAUDE.md), none of this runs during normal
+  gameplay or tests — it only executes when the module is run standalone
+  (`python -m wiz_drive.map_loader`).
+- **Impact:** Not a bug, but it is the bulk of the file's line count and noise.
+  It obscures the actual parsing logic when reading, and the prints duplicate
+  state already visible in a debugger. Inert in production by design.
+- **Suggested fix (later):** Thin it out — keep a few high-value traces, drop
+  the line-by-line dumps; or replace the `debug` bool + prints with the stdlib
+  `logging` module so verbosity is controlled per-run without dead branches.
+- **Status:** Observed, not yet decided.
+
+### map_loader.py — explicit-stats ENEMY still does a library lookup for `xp`
+- **Files:** src/wiz_drive/map_loader.py:142 (`_parse_enemy_line`, 6-field
+  branch); `get_stats` fallback in src/wiz_drive/enemy.py.
+- **Finding:** The 6-field `ENEMY|name|hp|attack|speed|x y` form takes hp/attack/
+  speed from the line but still calls `get_stats(name)` solely to obtain `xp`
+  (xp is intentionally not part of the map format — see CLAUDE.md). This is one
+  lookup, not a redundant double-call; the notable part is the *behavior*: for a
+  name absent from `ENEMY_TYPES`, `get_stats` silently returns the fallback
+  `xp: 0`. So a fully-explicit enemy with an unrecognized name parses fine but
+  is worth 0 XP with no warning.
+- **Impact:** Minor/by-design, but a quietly surprising edge: explicit stats
+  imply "I don't need the library," yet xp still depends on it, and an unknown
+  name degrades to 0 xp instead of erroring or warning.
+- **Suggested fix (later):** Either (a) allow an optional 7th xp field on the
+  explicit form, or (b) emit a warning when an explicit-stats enemy's name is
+  not in `ENEMY_TYPES` so the silent xp=0 is visible.
+- **Status:** Observed, not yet decided.
