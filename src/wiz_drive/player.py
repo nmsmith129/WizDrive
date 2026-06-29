@@ -23,6 +23,7 @@ class Player:
         self.intelligence = intelligence  # Spell effectiveness
         self.mana = mana  # Maximum mana; consumed once spells exist
         self.weapon = None  # Equipped weapon stub; future equipment system fills this slot
+        self.inventory = []  # Items collected from the floor; equipment/usage systems come later
         self.hp = max_hp if hp is None else hp  # Current HP, starts full
         self.mp = mana if mp is None else mp  # Current mana, starts full
         self.xp = 0
@@ -101,3 +102,7 @@ class Player:
     def use_item(self, item):
         # Placeholder for item usage logic
         print(f"{self.name} uses {item}!")
+
+    def pick_up(self, item):
+        # Adds an item collected from the floor to the player's inventory.
+        self.inventory.append(item)

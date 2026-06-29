@@ -2,12 +2,12 @@ import json
 import os
 
 from . import map_loader
-map_loader.debug = False
 from .map_loader import load_map_file
 from .player import Player
 from .enemy import Enemy
+from pathlib import Path
 
-STATE_FILE = os.path.join(os.path.dirname(__file__), "game_state.json")
+STATE_FILE = str(Path(__file__).parent / "game_state.json")
 SCHEMA_VERSION: int = 1
 
 
@@ -100,7 +100,7 @@ class GameState:
             ],
         }
         with open(STATE_FILE, "w") as f:
-            json.dump(data, f)
+            json.dump(data, f, indent=2)
 
     def _is_wall(self, x, y):
         # Returns True if (x, y) is out of bounds or a wall tile.
@@ -113,6 +113,13 @@ class GameState:
         for e in self.enemies:
             if e.grid_x == x and e.grid_y == y:
                 return e
+        return None
+
+    def _item_at(self, x, y):
+        # Returns the item lying on grid position (x, y), or None if the tile has none.
+        for i in self.items:
+            if i.grid_x == x and i.grid_y == y:
+                return i
         return None
 
     def apply_key(self, key):
@@ -128,18 +135,24 @@ class GameState:
                 print("Blocked by a wall.")
             else:
                 self.player.move("forward" if key == "w" else "backward")
-                stairs = self.stairs
-                if stairs and self.player.location == stairs:
-                    next_index = self.floor_index + 1
-                    if next_index < len(self.floors):
-                        print(f"You descend to floor {next_index + 1}.")
-                        self.floor_index = next_index
-                        _, start_pos, start_facing, enemies, _, _ = self.floors[self.floor_index]
-                        self.player.location = start_pos
-                        self.player.facing = start_facing
-                        self.enemies = list(enemies)
-                    else:
-                        print("These stairs lead nowhere... yet.")
+                item = self._item_at(*self.player.location)
+                if item:
+                    print(f"You found a {item.name}.")
+                    self.player.pick_up(item)
+                    self.items.remove(item)
+                else:
+                    stairs = self.stairs
+                    if stairs and self.player.location == stairs:
+                        next_index = self.floor_index + 1
+                        if next_index < len(self.floors):
+                            print(f"You descend to floor {next_index + 1}.")
+                            self.floor_index = next_index
+                            _, start_pos, start_facing, enemies, _, _ = self.floors[self.floor_index]
+                            self.player.location = start_pos
+                            self.player.facing = start_facing
+                            self.enemies = list(enemies)
+                        else:
+                            print("These stairs lead nowhere... yet.")
         elif key == "a":
             self.player.turn("left")
         elif key == "d":

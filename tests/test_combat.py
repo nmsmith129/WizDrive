@@ -5,6 +5,7 @@ import wiz_drive.player as player_module
 from wiz_drive.game_state import GameState
 from wiz_drive.player import Player
 from wiz_drive.enemy import Enemy
+from wiz_drive.item import Item
 
 
 @pytest.fixture
@@ -142,6 +143,55 @@ class TestIsWall:
 
     def test_far_out_of_bounds_returns_true(self):
         assert self._make_wall_state()._is_wall(100, 100) is True
+
+
+class TestItemPickup:
+    # Player starts at (1, 1) facing north; north delta is (0, +1), so a forward
+    # step ("w") lands on (1, 2).
+    def _make_item_state(self, items, grid=None):
+        if grid is None:
+            grid = [[0] * 10 for _ in range(10)]
+        p = Player("Hero", hp=20)
+        p.location = (1, 1)
+        p.facing = "north"
+        floor_data = (grid, p.location, p.facing, [], list(items), None)
+        return GameState("dummy.dngn", [floor_data], 0, p, [])
+
+    def test_walking_onto_item_adds_it_to_inventory(self):
+        item = Item("Gold Coin", 5, "shiny", grid_x=1, grid_y=2)
+        state = self._make_item_state([item])
+        state.apply_key("w")
+        assert item in state.player.inventory
+
+    def test_walking_onto_item_removes_it_from_the_floor(self):
+        item = Item("Gold Coin", 5, "shiny", grid_x=1, grid_y=2)
+        state = self._make_item_state([item])
+        state.apply_key("w")
+        assert item not in state.items
+
+    def test_collected_item_is_not_picked_up_again_on_return(self):
+        item = Item("Gold Coin", 5, "shiny", grid_x=1, grid_y=2)
+        state = self._make_item_state([item])
+        state.apply_key("w")          # step onto (1, 2), pick it up
+        state.apply_key("s")          # step back to (1, 1)
+        state.apply_key("w")          # step onto (1, 2) again — nothing left
+        assert state.player.inventory == [item]
+
+    def test_only_the_item_on_the_tile_is_collected(self):
+        here = Item("Gold Coin", 5, "shiny", grid_x=1, grid_y=2)
+        elsewhere = Item("Iron Sword", 30, "blade", grid_x=5, grid_y=5)
+        state = self._make_item_state([here, elsewhere])
+        state.apply_key("w")
+        assert state.player.inventory == [here]
+        assert elsewhere in state.items
+
+    def test_walking_onto_empty_tile_does_not_pick_up_or_crash(self):
+        # Regression: the move-onto-open-tile branch calls _item_at, which must
+        # exist (an earlier version crashed with AttributeError here).
+        state = self._make_item_state([])
+        state.apply_key("w")
+        assert state.player.location == (1, 2)
+        assert state.player.inventory == []
 
 
 @pytest.mark.parametrize("facing,expected_next,expected_prev", [
