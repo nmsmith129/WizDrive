@@ -1,0 +1,35 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      // Imports the project headlessly and quits, surfacing any GDScript parse
+      // errors without opening the editor. Fast sanity check after edits.
+      "label": "Godot: Check scripts (headless import)",
+      "type": "shell",
+      "command": "C:\\Godot\\godot_console.exe",
+      "args": ["--headless", "--path", "${workspaceFolder}", "--editor", "--quit-after", "20"],
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      // Re-runs the one-time type generator (tools/generate_types.gd).
+      "label": "Godot: Regenerate type resources",
+      "type": "shell",
+      "command": "C:\\Godot\\godot_console.exe",
+      "args": ["--headless", "--path", "${workspaceFolder}", "--script", "res://tools/generate_types.gd"],
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      // Re-runs the .dngn -> .tres converter (tools/convert_dngn.gd).
+      // NOTE: its SRC_DIR still points at res://assets/maps, now archived —
+      // update the path in the tool before re-running.
+      "label": "Godot: Convert .dngn maps",
+      "type": "shell",
+      "command": "C:\\Godot\\godot_console.exe",
+      "args": ["--headless", "--path", "${workspaceFolder}", "--script", "res://tools/convert_dngn.gd"],
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared" }
+    }
+  ]
+}

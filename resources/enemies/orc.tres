@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="EnemyType" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/enemy_type.gd" id="1_a7y6u"]
+
+[resource]
+script = ExtResource("1_a7y6u")
+display_name = "Orc"
+hp = 25
+attack = 6
+xp = 40

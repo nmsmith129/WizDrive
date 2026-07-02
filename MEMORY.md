@@ -114,4 +114,24 @@ During `/speckit-implement`, delegate ALL coding and test-writing to sub-agents 
 **Why:** Constitution Principle VI is explicit on this. Violated on the 001-persistence-schema-versioning feature — wrote all code inline as the orchestrator instead of spawning a testing sub-agent and a separate implementation sub-agent.
 **How to apply:** When tasks.md has `[TEST-AGENT]` tasks, spawn a Sonnet sub-agent (Agent tool) to write those tests and confirm they FAIL before implementation. Then spawn a separate Sonnet sub-agent for `[IMPL-AGENT]` tasks. Infra/setup tasks (fixture files, directory creation) are orchestrator work and don't require delegation. Opus escalation requires explicit prior user permission recorded in plan.md Complexity Tracking.
 
+### project-godot-port
+WizDrive is being ported from Python/Pygame to Godot 4.7 / GDScript — clean rewrite, in place. (type: project)
+**Why:** Decided 2026-07-01. Next roadmap priorities (first-person 3D, HUD, wall textures) are painful in Pygame and near-free in Godot, and none had been built yet in Pygame — ideal moment to switch. User chose: clean rewrite (not mechanical translation), replace-in-place (repo becomes the Godot project), maps moved from `.dngn` text to `.tres` Resources, and spec 001 (persistence/schema-versioning) to be re-thought around Godot `Resource`/`ResourceSaver` instead of the Python JSON approach.
+**How to apply:** This supersedes the Python-era [[project-wizdrive-overview]] — the Python code now lives in `archive/` and is reference only. Work on the branch `port/godot-4`. See [[feedback-gdscript-learning]] for how the user wants to collaborate on it.
+
+Done so far (branch `port/godot-4`, not yet committed):
+- Python source moved to `archive/` (src, tests, assets, pyproject.toml, pytest.ini). `docs/` and `specs/` kept at repo root.
+- Data layer as Resource classes in `scripts/resources/`: `EnemyType`, `ItemType`, `EnemyPlacement`, `ItemPlacement`, `FloorData`, `DungeonData`, `PlayerData`. Plus `scripts/game_constants.gd` (`GameConstants`: Facing enum + move-delta tables) and `scripts/type_library.gd` (`TypeLibrary` autoload: name→stats lookup, ports `get_stats`/`get_item_stats`).
+- One-time tools in `tools/`: `generate_types.gd` (wrote 11 enemy + 9 item `.tres` under `resources/`) and `convert_dngn.gd` (converted both maps to `data/maps/*.tres`); both are `SceneTree` scripts run headless. NOTE: `convert_dngn.gd`'s `SRC_DIR` still points at the pre-archive `res://assets/maps` (now `res://archive/assets/maps`) — stale but tool is retired since maps are already converted & verified.
+- `.vscode/` has a Godot debug `launch.json` (inert until a main scene exists) + `tasks.json` headless helpers.
+
+Still to do: Stage 2 = port `player.gd` + `game_state.gd` with signals replacing `print()`, plus GUT tests mirroring pytest. Stage 3 = 2D parity view → `FloorView3D` (first-person) → HUD → `SaveGame` persistence. Later: rewrite root `CLAUDE.md` + this file's Python-era entries.
+
+Env: Godot at `C:\Godot\godot.exe` (windowed) and `C:\Godot\godot_console.exe` (console, use for CLI output); `C:\Godot` on PATH. Headless run: `godot_console --headless --path . --script res://tools/<x>.gd`.
+
+### feedback-gdscript-learning
+User is new to GDScript and prefers to type code himself while Claude guides — don't write code during learning exercises. (type: feedback)
+**Why:** During the `convert_dngn.gd` port (2026-07-01) he asked to type the code himself with Claude guiding ("I type the fixes, you guide"), to be taught GDScript concepts as they arise in real code (not upfront), and at one point blanked a file and told Claude NOT to write any code in it so he could implement it as an exercise (original kept as `.bak`). He wants working fluency in the language, not just a finished port — he retains more by fighting through errors himself.
+**How to apply:** When it's a learning exercise or he's driving, do NOT write/edit the code file — explain the concept, name the relevant APIs, point at the specific error/line, let him type. Flag the *next* imminent error(s) so he isn't blind, but hold deeper logic issues until his code runs ("one layer at a time"). Running/verifying headless and reading his file to review are fine. Preference is exercise-scoped — he still delegates non-teaching scaffolding (setup, tooling, archiving) to Claude. He reported reading-fluency by end of first session; re-confirm how hands-on he wants to be per stage rather than assuming. Complements [[feedback-coding-style]].
+
 <!-- MEMORIES END -->

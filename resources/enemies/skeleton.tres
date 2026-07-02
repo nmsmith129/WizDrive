@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="EnemyType" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/enemy_type.gd" id="1_astl7"]
+
+[resource]
+script = ExtResource("1_astl7")
+display_name = "Skeleton"
+hp = 15
+attack = 4
+xp = 20

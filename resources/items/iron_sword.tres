@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemType" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/item_type.gd" id="1_e17m5"]
+
+[resource]
+script = ExtResource("1_e17m5")
+display_name = "Iron Sword"
+value = 30
+category = "weapon"
+description = "A sturdy iron blade"
+effect = {
+"strength": 4
+}

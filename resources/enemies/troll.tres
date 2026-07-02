@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="EnemyType" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/enemy_type.gd" id="1_fotfs"]
+
+[resource]
+script = ExtResource("1_fotfs")
+display_name = "Troll"
+hp = 20
+attack = 5
+xp = 30

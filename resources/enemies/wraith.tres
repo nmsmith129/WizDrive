@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="EnemyType" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/enemy_type.gd" id="1_v5rpf"]
+
+[resource]
+script = ExtResource("1_v5rpf")
+display_name = "Wraith"
+hp = 8
+attack = 7
+xp = 45

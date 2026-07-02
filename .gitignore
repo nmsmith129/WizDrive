@@ -5,3 +5,9 @@ game_state.json
 *.egg-info/
 build/
 dist/
+
+# Godot 4 editor cache and per-user data
+.godot/
+*.import
+export_presets.cfg
+.godot/imported/

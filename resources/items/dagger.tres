@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemType" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/item_type.gd" id="1_mkiuy"]
+
+[resource]
+script = ExtResource("1_mkiuy")
+display_name = "Dagger"
+value = 15
+category = "weapon"
+description = "A small, quick blade"
+effect = {
+"strength": 2
+}

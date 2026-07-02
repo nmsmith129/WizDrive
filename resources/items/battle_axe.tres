@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemType" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/item_type.gd" id="1_r8emv"]
+
+[resource]
+script = ExtResource("1_r8emv")
+display_name = "Battle Axe"
+value = 55
+category = "weapon"
+description = "A heavy two-handed axe"
+effect = {
+"strength": 7
+}

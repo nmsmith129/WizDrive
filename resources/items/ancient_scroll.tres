@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ItemType" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/item_type.gd" id="1_ym3ck"]
+
+[resource]
+script = ExtResource("1_ym3ck")
+display_name = "Ancient Scroll"
+value = 50
+category = "treasure"
+description = "Inscribed with an unknown spell"

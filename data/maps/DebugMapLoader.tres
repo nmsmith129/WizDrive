@@ -1,0 +1,56 @@
+[gd_resource type="Resource" script_class="DungeonData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/floor_data.gd" id="1_xk8fa"]
+[ext_resource type="Script" path="res://scripts/resources/enemy_placement.gd" id="2_xmfrb"]
+[ext_resource type="Script" path="res://scripts/resources/item_placement.gd" id="3_gpupc"]
+[ext_resource type="Script" path="res://scripts/resources/dungeon_data.gd" id="4_dp63c"]
+
+[sub_resource type="Resource" id="Resource_e88y5"]
+script = ExtResource("2_xmfrb")
+type_name = "Goblin"
+position = Vector2i(3, 2)
+hp_override = 10
+attack_override = 3
+speed_override = 2
+
+[sub_resource type="Resource" id="Resource_2noe0"]
+script = ExtResource("3_gpupc")
+type_name = "Gold Coin"
+position = Vector2i(1, 2)
+value_override = 5
+description_override = "A shiny gold coin"
+
+[sub_resource type="Resource" id="Resource_jc1e0"]
+script = ExtResource("1_xk8fa")
+grid = Array[PackedInt32Array]([PackedInt32Array(1, 1, 1, 1, 1), PackedInt32Array(1, 0, 0, 0, 1), PackedInt32Array(1, 0, 0, 0, 1), PackedInt32Array(1, 0, 0, 0, 1), PackedInt32Array(1, 1, 1, 1, 1)])
+player_start = Vector2i(2, 1)
+facing = 1
+enemies = Array[ExtResource("2_xmfrb")]([SubResource("Resource_e88y5")])
+items = Array[ExtResource("3_gpupc")]([SubResource("Resource_2noe0")])
+
+[sub_resource type="Resource" id="Resource_5xv48"]
+script = ExtResource("2_xmfrb")
+type_name = "Skeleton"
+position = Vector2i(2, 1)
+hp_override = 15
+attack_override = 4
+speed_override = 1
+
+[sub_resource type="Resource" id="Resource_48b2r"]
+script = ExtResource("3_gpupc")
+type_name = "Health Potion"
+position = Vector2i(2, 2)
+value_override = 20
+description_override = "Restores 20 HP"
+
+[sub_resource type="Resource" id="Resource_ev03y"]
+script = ExtResource("1_xk8fa")
+grid = Array[PackedInt32Array]([PackedInt32Array(1, 1, 1, 1), PackedInt32Array(1, 0, 0, 1), PackedInt32Array(1, 0, 0, 1), PackedInt32Array(1, 1, 1, 1)])
+player_start = Vector2i(1, 2)
+enemies = Array[ExtResource("2_xmfrb")]([SubResource("Resource_5xv48")])
+items = Array[ExtResource("3_gpupc")]([SubResource("Resource_48b2r")])
+
+[resource]
+script = ExtResource("4_dp63c")
+display_name = "Debug Dungeon"
+floors = Array[ExtResource("1_xk8fa")]([SubResource("Resource_jc1e0"), SubResource("Resource_ev03y")])

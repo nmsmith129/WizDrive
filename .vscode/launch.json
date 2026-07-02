@@ -2,14 +2,19 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "WizDrive: Run (liveTestOne)",
-      "type": "debugpy",
+      // Launches the game via the godot-tools extension and attaches the
+      // GDScript debugger, so breakpoints in .gd files work. Uses the editor
+      // path from settings.json (godotTools.editorPath.godot4).
+      // NOTE: inert until a main scene is set in project.godot (Stage 3) —
+      // until then it errors with "No main scene defined".
+      "name": "WizDrive: Launch project",
+      "type": "godot",
       "request": "launch",
-      "module": "wiz_drive.wiz_drive_main",
-      "args": ["assets/maps/liveTestOne.dngn"],
-      "cwd": "${workspaceFolder}",
-      "env": { "PYTHONPATH": "${workspaceFolder}/src" },
-      "console": "integratedTerminal"
+      "project": "${workspaceFolder}",
+      "address": "127.0.0.1",
+      "port": 6007,
+      "launch_game_instance": true,
+      "launch_scene": false
     }
   ]
 }

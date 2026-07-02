@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemType" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/item_type.gd" id="1_mr6qb"]
+
+[resource]
+script = ExtResource("1_mr6qb")
+display_name = "Health Potion"
+value = 20
+category = "consumable"
+description = "Restores 15 HP"
+effect = {
+"heal": 15
+}
