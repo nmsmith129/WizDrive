@@ -18,13 +18,13 @@
   the iteration process.
 -->
 
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]
+**Language/Version**: [e.g., Godot 4.7 / GDScript or NEEDS CLARIFICATION]
 
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
+**Primary Dependencies**: [e.g., Godot engine, GUT (dev-only addon) or NEEDS CLARIFICATION]
 
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
+**Storage**: [if applicable, e.g., SaveGame resource via ResourceSaver (user://), .tres data or N/A]
 
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]
+**Testing**: [e.g., GUT (godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://test -gexit) or NEEDS CLARIFICATION]
 
 **Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
 
@@ -43,24 +43,27 @@
 Confirm this plan complies with the WizDrive Constitution (`.specify/memory/constitution.md`).
 Mark each gate PASS / FAIL (justify any FAIL in Complexity Tracking):
 
-- [ ] **I. Test-First (NON-NEGOTIABLE)**: New behaviour ships with pytest coverage; parser
-      changes cover `load_map_file`/`validate_map_file`/`load_map_text`; probabilistic logic
-      is made deterministic in tests.
-- [ ] **II. Data-Driven Content**: New enemies/items/maps extend `ENEMY_TYPES`/`ITEM_TYPES`
-      or the `.dngn` format (with fallbacks) rather than hardcoding content into logic.
-- [ ] **III. Rendering-Agnostic Core**: Game logic stays visualizer-independent and avoids a
-      `pygame` dependency where possible; all visualizers consume the same shared state.
-- [ ] **IV. Consistent Code Style**: Python 3.11+, type hints, snake_case/PascalCase/UPPER_SNAKE
-      naming, single-line first-line comments, `!r` for untrusted values.
-- [ ] **V. Backward-Compatible Persistence**: Save/load tolerates older `game_state.json` via
-      defaulting field access; `game_state.json` carries a `schema_version`; a regression test
+- [ ] **I. Test-First (NON-NEGOTIABLE)**: New behaviour ships with GUT coverage; map/data
+      changes cover loading AND validation of the affected `DungeonData` `.tres`; probabilistic
+      logic is made deterministic in tests (seed the RNG or inject a `RandomNumberGenerator`).
+- [ ] **II. Data-Driven Content**: New enemies/items/maps extend the `TypeLibrary`
+      `EnemyType`/`ItemType` `.tres` or the `DungeonData` resource schema (with fallbacks)
+      rather than hardcoding content into logic.
+- [ ] **III. Rendering-Agnostic Core**: Game logic stays view-independent and avoids
+      `Node`/scene/rendering dependencies where possible (core extends `RefCounted`); all views
+      consume the same shared state.
+- [ ] **IV. Consistent Code Style**: Godot 4.7 / typed GDScript, `class_name`+`extends`,
+      snake_case files/funcs/vars, PascalCase `class_name`, UPPER_SNAKE constants,
+      `_leading_underscore` privates, `#`/`##` comment discipline, quoted untrusted values.
+- [ ] **V. Backward-Compatible Persistence**: Save/load tolerates older saves via defaulting
+      Resource properties; the `SaveGame` resource carries a `schema_version`; a regression test
       loads an older-version save fixture; breaking persisted-field changes bump `schema_version`.
-- [ ] **VI. Sub-Agent Execution & Test Independence**: Plan delegates ALL implementation and
-      testing to sub-agents (orchestrator only plans/reviews); test and implementation work go
-      to separate sub-agents; sub-agents run Sonnet by default (Opus only with explicit prior
-      user permission, recorded in Complexity Tracking).
-- [ ] **Constraints**: Any new external dependency is declared in `pyproject.toml`; new
-      platform-specific code provides both a Windows and a Linux path.
+- [ ] **VI. Sub-Agent Execution & Test Independence**: Delegated work sends ALL implementation
+      and testing to sub-agents (orchestrator only plans/reviews); test and implementation work
+      go to separate sub-agents; sub-agents run Sonnet by default (Opus only with explicit prior
+      user permission, recorded in Complexity Tracking). Guided-learning work is exempt.
+- [ ] **Constraints**: Any new third-party addon is committed under `addons/` and enabled in
+      `project.godot`; new platform-specific code provides both a Windows and a Linux path.
 
 ## Project Structure
 

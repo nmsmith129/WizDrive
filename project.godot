@@ -11,14 +11,8 @@ config_version=5
 [application]
 
 config/name="WizDrive"
-config/description="A Wizardry-inspired first-person dungeon crawler."
-config/features=PackedStringArray("4.7", "GL Compatibility")
-
-[autoload]
-
-TypeLibrary="*res://scripts/type_library.gd"
+config/features=PackedStringArray("4.7")
 
 [rendering]
 
-renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"

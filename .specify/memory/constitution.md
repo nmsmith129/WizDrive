@@ -1,124 +1,47 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: 1.3.1 → 2.0.0
-Bump rationale: MAJOR — backward-incompatible redefinition of an existing governance
-constraint. The mandated dependency-declaration artifact changes from requirements.txt
-to pyproject.toml, and requirements.txt is removed from the repository. A repository
-that was compliant under 1.3.1 (requirements.txt present, declaring runtime deps) is no
-longer compliant, which the versioning policy classifies as a backward-incompatible
-change.
-  - Technology & Architecture Constraints (Runtime): runtime external dependencies MUST
-    now be declared in pyproject.toml ([project.dependencies]); test-only dependencies
-    (e.g. pytest) belong in an optional-dependencies group and remain exempt.
-  - Definition of Done: dependency-declaration item now points at pyproject.toml.
+Version change: 2.0.0 → 3.0.0
+Bump rationale: MAJOR — backward-incompatible redefinition of nearly every principle's
+technology binding, plus a scope change to Principle VI. WizDrive has been ported from
+Python/Pygame to Godot 4.7 / GDScript (Python source archived under archive/). Every
+principle and constraint that named a Python tool, filetype, or API is re-grounded in its
+Godot equivalent; pygame-implementation-only constraints are dropped; Principle VI gains a
+guided-learning carve-out. A repository/plan compliant under 2.0.0 (Python, pytest,
+pyproject.toml) is no longer compliant, which the versioning policy classifies as MAJOR.
 
 Principles:
-  I–VI. Unchanged.
+  I.   Test-First Discipline (NON-NEGOTIABLE)   (RE-GROUNDED: pytest → GUT; map loader →
+       DungeonData resources; deterministic randf())
+  II.  Data-Driven Content                       (RE-GROUNDED: ENEMY_TYPES/ITEM_TYPES →
+       TypeLibrary + .tres; .dngn → DungeonData .tres)
+  III. Rendering-Agnostic Core                   (RE-GROUNDED: pygame → Node/scene deps)
+  IV.  Consistent Code Style                      (RE-GROUNDED: Python style → GDScript style)
+  V.   Backward-Compatible Persistence            (RE-GROUNDED: game_state.json → SaveGame
+       resource via ResourceSaver)
+  VI.  Sub-Agent Execution & Test Independence    (SCOPE CHANGE: added guided-learning
+       carve-out)
 
 Added sections: none
 Removed sections: none
 
+Dropped constraints (pygame-only artifacts, no honest Godot analog):
+  - pygame.init() before map load (Enemy/Item are RefCounted, no Surface)
+  - map_loader.debug flag (no such flag in the port)
+  - FloorData positional-tuple unpacking (FloorData is now a Resource; inverted to
+    named-property access)
+  - msvcrt Windows-only text-input technical-debt clause (Godot exports cross-platform)
+
+Note: historical pre-3.0.0 Sync Impact Reports removed to keep the active governance file
+free of stale Python references; version history is preserved in git.
+
 Templates requiring updates:
-  ✅ .specify/templates/plan-template.md  (Constraints gate: requirements.txt → pyproject.toml)
+  ✅ .specify/templates/plan-template.md  (Constitution Check gate + Technical Context
+     examples re-grounded to Godot/GUT/GDScript)
+  ✅ .specify/templates/spec-template.md  (verified — no Python references, no change)
+  ✅ .specify/templates/tasks-template.md (verified — no Python references, no change)
 
 Follow-up TODOs: none
--->
-
-<!--
-SYNC IMPACT REPORT
-==================
-Version change: 1.3.0 → 1.3.1
-Bump rationale: PATCH — clarification of dependency policy: test-only dependencies
-(e.g. pytest) are exempt from the requirements.txt declaration rule. Only runtime
-external dependencies must be declared. The Definition of Done checklist updated to
-match. No principles added or redefined; no templates require changes.
-
-Principles:
-  I–VI. Unchanged.
-
-Added sections: none
-Removed sections: none
-
-Templates requiring updates: none
-
-Follow-up TODOs: none new (existing open TODOs from 1.3.0 unchanged)
--->
-
-<!--
-SYNC IMPACT REPORT
-==================
-Version change: 1.2.0 → 1.3.0
-Bump rationale: MINOR — clarifications and new guidance, no backward-incompatible
-removal/redefinition:
-  - Dependency policy: pygame is no longer "the only" dependency; ALL external
-    dependencies MUST be declared in requirements.txt.
-  - Principle V: now requires a `schema_version` field in game_state.json and a
-    regression test that loads an older-version save fixture.
-  - Principle VI: scoped to AI-assisted development (human-written code is exempt);
-    Opus permitted per-task only with explicit prior user permission; added an
-    explicit enforcement note (no runtime guard; verified at plan gate + review).
-  - Added "Target platforms: Windows and Linux" with msvcrt flagged as debt.
-  - Added new section: Definition of Done.
-  - Added new section: Glossary (orchestrator, sub-agent, implementation/testing
-    sub-agent).
-
-Principles:
-  I.   Test-First Discipline (NON-NEGOTIABLE)        (unchanged)
-  II.  Data-Driven Content                            (unchanged)
-  III. Rendering-Agnostic Core                        (unchanged)
-  IV.  Consistent Code Style                           (unchanged)
-  V.   Backward-Compatible Persistence                 (EXPANDED: schema_version + regression test)
-  VI.  Sub-Agent Execution & Test Independence         (CLARIFIED: scope, Opus escalation, enforcement)
-
-Added sections: Definition of Done; Glossary
-Removed sections: none
-
-Templates requiring updates:
-  ✅ .specify/templates/plan-template.md  (Constitution Check gates V & VI + constraints line)
-  ✅ .specify/templates/tasks-template.md (Opus-with-permission note)
-  ✅ .specify/templates/spec-template.md  (reviewed — no change needed)
-
-Follow-up TODOs (implementation work the new rules now require):
-  - TODO(REQUIREMENTS): No requirements.txt exists yet; create one declaring pygame and pytest.
-  - TODO(SCHEMA_VERSION): game_state.json has no schema_version field yet; add it.
-  - TODO(SAVE_REGRESSION): Add a regression test that loads an older-version save fixture.
-  - TODO(MSVCRT): text_visualizer real-time input uses Windows-only msvcrt; add a Linux path.
-  - TODO(GUIDANCE_FILE): RESOLVED — CLAUDE.md restored at repo root and updated.
--->
-
-<!--
-SYNC IMPACT REPORT
-==================
-Version change: 1.1.0 → 1.2.0
-Bump rationale: MINOR — materially expanded Principle VI. It now requires that ALL
-implementation and ALL testing/test-writing be delegated to sub-agents (the
-orchestrating agent only plans, delegates, and reviews), and that every such
-implementation and testing sub-agent run the Sonnet model. Principle renamed from
-"Independent Test Authorship" to "Sub-Agent Execution & Test Independence" to reflect
-the broadened scope. No principles removed; no backward-incompatible redefinition.
-
-Principles:
-  I.   Test-First Discipline (NON-NEGOTIABLE)        (unchanged)
-  II.  Data-Driven Content                            (unchanged)
-  III. Rendering-Agnostic Core                        (unchanged)
-  IV.  Consistent Code Style                           (unchanged)
-  V.   Backward-Compatible Persistence                 (unchanged)
-  VI.  Sub-Agent Execution & Test Independence         (EXPANDED in 1.2.0; was
-       "Independent Test Authorship")
-
-Added sections: none
-Removed sections: none
-
-Templates requiring updates:
-  ✅ .specify/templates/plan-template.md  (Constitution Check gate VI updated)
-  ✅ .specify/templates/tasks-template.md (agent-separation note: sub-agents + Sonnet)
-  ✅ .specify/templates/spec-template.md  (reviewed — no change needed)
-
-Follow-up TODOs:
-  - TODO(GUIDANCE_FILE): Runtime guidance should live in CLAUDE.md at the repo root,
-    but that file currently exists only as CLAUDE_old.md AND contains unresolved Git
-    conflict markers (<<<<<<< / ======= / >>>>>>>). Resolve and restore CLAUDE.md.
 -->
 
 # WizDrive Constitution
@@ -127,49 +50,58 @@ Follow-up TODOs:
 
 ### I. Test-First Discipline (NON-NEGOTIABLE)
 
-The pytest suite is the safety net for an evolving game and MUST stay green on every
-commit that merges to `main`. New behaviour MUST ship with tests:
+The GUT (Godot Unit Test) suite is the safety net for an evolving game and MUST stay green
+on every commit that merges to `main`. New behaviour MUST ship with tests:
 
-- Map/parser changes MUST exercise all relevant paths — `load_map_file`,
-  `validate_map_file`, and `load_map_text`.
-- Combat, XP/leveling, and state changes MUST have coverage in the corresponding
-  `tests/` module.
-- Probabilistic logic MUST be made deterministic in tests (e.g. monkeypatch
-  `player.random.random` via the `always_hit`/`always_miss` fixtures).
+- Map/data changes MUST exercise loading AND validation of the affected `DungeonData`
+  `.tres` resources (via `load()`/`ResourceLoader`).
+- Combat, XP/leveling, and state changes MUST have coverage in the corresponding `test/`
+  suite.
+- Probabilistic logic MUST be made deterministic in tests — seed the RNG or inject a
+  `RandomNumberGenerator` double so `randf()` is repeatable (mirrors the old
+  `always_hit`/`always_miss` fixtures).
 
-**Rationale:** The project already carries a large automated suite; preserving it is
-the cheapest defense against regressions as systems are added.
+Run the suite headless with:
+`godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://test -gexit`.
+
+**Rationale:** The project already carries a large automated suite (ported from pytest);
+preserving it is the cheapest defense against regressions as systems are added.
 
 ### II. Data-Driven Content
 
-Game content MUST be expressed as data, not hardcoded into game logic. Enemies and
-items come from the `ENEMY_TYPES` and `ITEM_TYPES` lookup tables; dungeons come from
-`.dngn` files. New content types MUST extend these tables or the map format — with a
+Game content MUST be expressed as data, not hardcoded into game logic. Enemies and items
+come from the `TypeLibrary` autoload backed by `EnemyType`/`ItemType` `.tres` resources
+under `resources/`; dungeons come from `DungeonData` `.tres` resources under `data/maps/`.
+New content types MUST extend those resources or the map resource schema — with a
 documented default fallback for unknown names — rather than branching logic per item.
 
 **Rationale:** Content scales without code changes and stays testable in isolation.
 
 ### III. Rendering-Agnostic Core
 
-Core game logic (`Player`, `GameState`, `map_loader`) MUST remain independent of any
-specific visualizer, and free of a `pygame` dependency where avoidable (`Player` has
-none today). Every visualizer (pygame top-down, text/ASCII, future first-person 3D)
-MUST consume the same shared state through the same public API.
+Core game logic (`Player`, `GameState`, and `DungeonData` loading) MUST remain independent
+of any specific view, and free of `Node`/scene/rendering dependencies where avoidable —
+core classes extend `RefCounted`, not `Node` (`Player` does this today). Every view (2D
+parity view, first-person `FloorView3D`, text) MUST consume the same shared state through
+the same public API, communicating via signals rather than reaching into rendering nodes.
 
-**Rationale:** Keeps the planned 3D renderer additive and lets logic be tested headless.
+**Rationale:** Keeps the planned first-person renderer additive and lets logic be tested
+headless.
 
 ### IV. Consistent Code Style
 
-Code MUST follow the established conventions:
+Code MUST follow the established GDScript conventions:
 
-- Python 3.11+ with type hints throughout; `from __future__ import annotations` for
-  forward references.
-- `snake_case` for modules/functions/variables, `PascalCase` for classes,
-  `UPPER_SNAKE_CASE` for constants, `_leading_underscore` for module-private functions.
-  Module files stay `snake_case` even when they contain a `PascalCase` class.
-- Comments are single-line (`# ...`) on the first line of a method body for
-  non-obvious logic only — not docstrings, and never on obvious code.
-- Error messages use `!r` (repr) formatting for untrusted/user-supplied values.
+- Godot 4.7 with typed GDScript throughout; `class_name` + `extends` for named types.
+- `.gd` file names are `snake_case`; `class_name` identifiers are `PascalCase`; functions
+  and variables are `snake_case`; constants are `UPPER_SNAKE_CASE`; private functions use a
+  `_leading_underscore`; signals are past-tense (`attacked`, `defeated`); constructor
+  parameters use a `p_` prefix to avoid shadowing members.
+- Comments are single-line `#` on the first line of a function body for non-obvious logic
+  only — never on obvious code. `##` is reserved for documentation comments on scripts,
+  members, and signals.
+- Error/log messages MUST quote untrusted/user-supplied values (wrap in quotes or use
+  `var_to_str()`); GDScript has no `!r`, so the quoting must be explicit.
 
 **Rationale:** Uniform style keeps a multi-client, multi-session codebase readable.
 
@@ -177,10 +109,13 @@ Code MUST follow the established conventions:
 
 Save/load MUST tolerate older save files:
 
-- `game_state.json` MUST include a `schema_version` field identifying the save format.
-- `GameState.from_save()` MUST read each field with a defaulting accessor
-  (`.get(field, default)`) so pre-existing saves keep loading after new fields are added.
-- A regression test MUST load a saved older-version fixture and assert it restores
+- The save is a `SaveGame` resource written via `ResourceSaver` (e.g.
+  `user://savegame.tres`) and MUST include an exported `schema_version: int` identifying
+  the save format.
+- Loading MUST rely on the fact that exported Resource properties auto-default when absent,
+  so pre-existing saves keep loading after new fields are added; any custom load path MUST
+  apply an equivalent default rather than assuming a field is present.
+- A regression test MUST load a saved older-version fixture resource and assert it restores
   correctly.
 - Removing or repurposing a persisted field is a breaking change: it MUST be called out
   explicitly and reflected in a `schema_version` bump.
@@ -191,9 +126,13 @@ unacceptable, and a version field makes compatibility provable rather than assum
 ### VI. Sub-Agent Execution & Test Independence
 
 This principle governs **AI-assisted development**. Code written directly by a human
-developer is outside its scope and is never a violation.
+developer is outside its scope and is never a violation. In particular, **guided-learning
+work** — where the user writes GDScript directly while the agent only explains, reviews,
+and advises (not delegating implementation) — is explicitly exempt from the sub-agent
+delegation mandate below. The Sonnet-default / gated-Opus rule still governs any actual
+sub-agent delegation that does occur.
 
-During AI-assisted development, all feature implementation and all test-writing/
+During delegated AI-assisted development, all feature implementation and all test-writing/
 test-execution MUST be delegated to sub-agents. The orchestrating agent MUST NOT write
 feature code or tests directly — it only plans, delegates, and reviews.
 
@@ -214,30 +153,28 @@ the plan-gate Constitution Check and during human review of the implementation.
 **Rationale:** Independent verification removes confirmation bias — an implementer who
 writes their own tests encodes the same wrong assumptions into both. Standardizing on
 Sonnet keeps cost and behaviour consistent for high-volume work, while gated Opus
-escalation preserves an escape hatch for genuinely hard problems.
+escalation preserves an escape hatch for genuinely hard problems. The guided-learning
+carve-out keeps the constitution honest about how the port is actually being built.
 
 ## Technology & Architecture Constraints
 
-- **Runtime:** Python 3.11+. Dependencies beyond `pygame` are permitted. Every runtime
-  external dependency MUST be declared in `pyproject.toml` (`[project.dependencies]`) at
-  the repository root; test-only dependencies (e.g. `pytest`) belong in an
-  optional-dependencies group (e.g. `[project.optional-dependencies].dev`) and are exempt
-  from the runtime-declaration requirement. `pyproject.toml` MUST also set
-  `requires-python = ">=3.11"`. Adding a new runtime dependency MUST be justified in the
-  feature plan.
-- **Target platforms:** Windows and Linux. Platform-specific code MUST be isolated and
-  provide a path for both. The text visualizer's real-time key input uses `msvcrt`,
-  which is Windows-only; this is acknowledged technical debt and MUST gain a Linux
-  equivalent to satisfy the Linux target.
-- **Pygame lifecycle:** `pygame.init()` MUST run before any map is loaded, because
-  `Enemy`/`Item` allocate `pygame.Surface` objects in `__init__`.
-- **Debug output:** `map_loader.debug` MUST be set to `False` in every entry-point
-  file before calling any loader function. Committed game-path code MUST NOT leave it
-  `True`.
-- **FloorData:** the positional `FloorData` tuple MUST be unpacked with named
-  variables (`grid, start_pos, start_facing, enemies, items, stairs = floor`).
-- **Generated artifacts:** `game_state.json` and bytecode (`__pycache__/`) are
-  git-ignored and MUST NOT be committed.
+- **Engine:** Godot 4.7 (GL Compatibility renderer), GDScript. The engine version is
+  recorded in `project.godot` (`config/features`). Adding a new engine feature/renderer
+  dependency MUST be justified in the feature plan.
+- **Third-party dependencies:** Any third-party addon/plugin MUST be committed under
+  `addons/` and enabled in `project.godot`. Dev-only addons (e.g. GUT) are the testing
+  equivalent of test-only dependencies and are exempt from the runtime-justification
+  requirement, but MUST still be committed so the suite runs reproducibly.
+- **Target platforms:** Windows and Linux. Godot exports cross-platform natively;
+  platform-specific code (if any) MUST be isolated and provide a path for both.
+- **Data access:** `DungeonData`, `FloorData`, `EnemyType`, and `ItemType` are Resource
+  classes — access their fields by name (`floor.grid`, `floor.player_start`, …). Do not
+  reintroduce positional-tuple unpacking for floor/map data.
+- **Debug output:** Committed game-path code MUST NOT leave verbose debug `print()` output
+  enabled; gate diagnostics behind an explicit debug flag or remove them before merge.
+- **Generated artifacts:** The save resource lives under `user://` (outside the repo). The
+  Godot cache (`.godot/`) and import metadata (`.import/`) are git-ignored and MUST NOT be
+  committed.
 
 ## Development Workflow & Quality Gates
 
@@ -245,12 +182,13 @@ escalation preserves an escape hatch for genuinely hard problems.
   `specify → clarify → plan → tasks → implement`, honoring the review gates after the
   spec and plan phases.
 - **Branching:** Feature work happens on sequentially numbered feature branches cut
-  from `working`. Completed features are merged into `main` at milestones; `working`
-  is the integration branch.
-- **Agent separation:** During `implement`, the orchestrator delegates ALL coding and
-  testing to sub-agents running the Sonnet model (Opus only with prior user permission);
-  test tasks and implementation tasks go to separate sub-agents (Principle VI).
-- **Merge gate:** The full pytest suite (`python -m pytest tests/ -v`) MUST pass
+  from the integration branch. Completed features are merged into `main` at milestones.
+- **Agent separation:** During delegated `implement` work, the orchestrator delegates ALL
+  coding and testing to sub-agents running the Sonnet model (Opus only with prior user
+  permission); test tasks and implementation tasks go to separate sub-agents (Principle
+  VI). Guided-learning work is exempt (Principle VI carve-out).
+- **Merge gate:** The full GUT suite
+  (`godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://test -gexit`) MUST pass
   before any merge into `main`.
 - **Roadmap order:** New features SHOULD respect the dependency ordering captured in
   `docs/SECOND_ROADMAP.md` — do not build a feature ahead of its prerequisites. *(Advisory.)*
@@ -260,27 +198,31 @@ escalation preserves an escape hatch for genuinely hard problems.
 A feature is Done only when ALL of the following hold:
 
 - [ ] All new behaviour has tests (Principle I), authored by the testing sub-agent
-      (Principle VI).
-- [ ] The full pytest suite passes (`python -m pytest tests/ -v`).
+      (Principle VI) — unless produced as guided-learning work.
+- [ ] The full GUT suite passes
+      (`godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://test -gexit`).
 - [ ] The plan's Constitution Check gate passed; any deviation is justified in the
       plan's Complexity Tracking.
-- [ ] Any new runtime external dependency is declared in `pyproject.toml`.
+- [ ] Any new third-party addon is committed under `addons/` and enabled in `project.godot`.
 - [ ] Persistence changes carry a `schema_version` update and a save regression test
       (Principle V), where applicable.
 - [ ] Documentation is updated — `CLAUDE.md` and the relevant `docs/SECOND_ROADMAP.md`
       markers.
-- [ ] Work is merged into `working` (and into `main` at milestones).
+- [ ] Work is merged into the integration branch (and into `main` at milestones).
 
 ## Glossary
 
 - **Orchestrator (orchestrating agent):** the top-level agent that plans, delegates to
-  sub-agents, and reviews their output. During AI-assisted development it does not write
-  feature code or tests directly.
+  sub-agents, and reviews their output. During delegated AI-assisted development it does
+  not write feature code or tests directly.
 - **Sub-agent:** a separate, isolated agent invocation spawned by the orchestrator to
   perform a delegated task with its own context.
 - **Implementation sub-agent:** a sub-agent that writes feature/production code.
 - **Testing sub-agent:** a sub-agent that writes and runs tests, distinct from any
   implementation sub-agent.
+- **Guided-learning work:** development where the user writes GDScript directly and the
+  agent only explains, reviews, and advises — exempt from the sub-agent mandate (Principle
+  VI).
 
 ## Governance
 
@@ -297,4 +239,4 @@ the dependent templates listed in the Sync Impact Report.
 - **Runtime guidance:** Day-to-day development guidance lives in the repository-root
   `CLAUDE.md`.
 
-**Version**: 2.0.0 | **Ratified**: 2026-06-07 | **Last Amended**: 2026-06-21
+**Version**: 3.0.0 | **Ratified**: 2026-06-07 | **Last Amended**: 2026-07-05

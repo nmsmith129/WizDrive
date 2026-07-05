@@ -1,9 +1,0 @@
-[gd_resource type="Resource" script_class="ItemType" format=3]
-
-[ext_resource type="Script" path="res://scripts/resources/item_type.gd" id="1_i6bsr"]
-
-[resource]
-script = ExtResource("1_i6bsr")
-display_name = "Iron Key"
-value = 5
-description = "Opens a locked door somewhere"
