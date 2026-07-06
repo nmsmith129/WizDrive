@@ -6,8 +6,6 @@ at specs/001-persistence-schema-versioning/plan.md
 
 # WizDrive — CLAUDE.md
 
-> **Project memory** is kept in [`MEMORY.md`](MEMORY.md) at the repo root (shared on the network drive). Read it at the start of a session and record any cross-session context there — not in this file. This file is hand-maintained project documentation only.
-
 WizDrive is a **traditional ASCII roguelike** in the lineage of the 1980s classics (Rogue, NetHack, Angband) and modern-classic **Brogue** — turn-based, grid-based, procedurally generated. It is built in **Godot 4.7 / GDScript** and targets **Android, Linux, and Windows 11**.
 
 The project is an early, clean-slate rebuild: the architecture is deliberately open and being worked out as it goes, so the codebase is currently a small set of foundational utilities. This file documents only what actually exists today and grows as the code does. (An earlier Python/Pygame incarnation is archived under [`archive/`](archive/) for reference only — it is not a translation target.)
