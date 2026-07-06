@@ -8,202 +8,75 @@ at specs/001-persistence-schema-versioning/plan.md
 
 > **Project memory** is kept in [`MEMORY.md`](MEMORY.md) at the repo root (shared on the network drive). Read it at the start of a session and record any cross-session context there — not in this file. This file is hand-maintained project documentation only.
 
-WizDrive is a Python/Pygame dungeon crawler inspired by Wizardry. The project is in active early development: the core map system, entity classes, combat, XP/leveling, and player attribute systems are complete; first-person 3D rendering and most gameplay mechanics are still on the roadmap.
+WizDrive is a **traditional ASCII roguelike** in the lineage of the 1980s classics (Rogue, NetHack, Angband) and modern-classic **Brogue** — turn-based, grid-based, procedurally generated. It is built in **Godot 4.7 / GDScript** and targets **Android, Linux, and Windows 11**.
+
+The project is an early, clean-slate rebuild: the architecture is deliberately open and being worked out as it goes, so the codebase is currently a small set of foundational utilities. This file documents only what actually exists today and grows as the code does. (An earlier Python/Pygame incarnation is archived under [`archive/`](archive/) for reference only — it is not a translation target.)
 
 ---
 
-## Running the Game
+## Working Style
 
-All source lives in the `wiz_drive` package under [`src/`](src/wiz_drive/), so run
-modules with `-m` and `src` on the path (run from the repo root):
+The developer is learning GDScript and drives the implementation: he types the code himself while Claude guides — explaining concepts, naming the relevant APIs, and pointing at the specific error or line. Don't write or edit GDScript files during a learning exercise or when he's driving; running/verifying headless and reading files to review is fine. Treat project setup and scaffolding as his to do unless he asks otherwise.
 
-```bash
-# bash
-PYTHONPATH=src python -m wiz_drive.wiz_drive_main assets/maps/liveTestOne.dngn
-```
+---
+
+## Project Layout
+
+| Path | Contents |
+|------|----------|
+| [`scripts/`](scripts/) | Game code (GDScript) |
+| [`scripts/resources/`](scripts/resources/) | `Resource`-derived data classes |
+| [`tests/`](tests/) | Home-grown headless test suite |
+| [`project.godot`](project.godot) | Godot project config — Compatibility (`gl_compatibility`) renderer, chosen with the Android target in mind |
+| [`archive/`](archive/) | Retired Python/Pygame source (reference only) |
+| `docs/`, `specs/`, `.specify/` | Design docs and Spec Kit artifacts, kept at the repo root |
+
+---
+
+## What Exists Today
+
+| File | Class | Purpose |
+|------|-------|---------|
+| [`scripts/resources/game_constants.gd`](scripts/resources/game_constants.gd) | `GameConstants` | `FOURWAY` / `EIGHTWAY` `Array[Vector2i]` direction tables |
+| [`scripts/pathfinding.gd`](scripts/pathfinding.gd) | `Pathfinding` | Static Dijkstra utilities: `dijkstra_map_4` and `dijkstra_map_8` |
+| [`scripts/resources/floor_data.gd`](scripts/resources/floor_data.gd) | `FloorData` | One floor's grid; `size()`, `is_wall(x, y)`, `wall_tiles()` |
+
+### `Pathfinding`
+Both functions take a fully decoupled `(start: Vector2i, blocked: Array[Vector2i], size: int)` signature and return a **Dijkstra distance map** `Dictionary[Vector2i, int]` — a distance field, *not* a path. Derive a path (or monster movement) by rolling downhill from any tile toward `start`. This is the classic **Brogue "Dijkstra map"** technique for AI, pursuit, and autoexplore. (Uniform-cost BFS under the hood; the 8-way variant currently allows corner-cutting.)
+
+### `FloorData` (`extends Resource`)
+Deliberately lean: `@export var grid: Array[PackedInt32Array]` (0 = open, 1 = wall). `is_wall(x, y)` is bounds-safe (off-map reads as wall). The intent is for walls to live in a dynamically-updated blocked-list on the future game-state controller, with `FloorData` a seldom-read source of truth.
+
+---
+
+## Grid & Coordinate Convention
+
+- Grid is indexed `grid[y][x]` with **`y = 0` at the bottom** (standard math orientation).
+- Directions: **north = +y, south = −y, east = +x, west = −x**. See `GameConstants.FOURWAY` / `EIGHTWAY`.
+
+---
+
+## Running Tests
+
+The suite is a DIY runner (no GUT/GdUnit4 yet): plain `RefCounted` test classes with `run(t)` share a `TestContext` (`check()` + pass/fail counters), all driven by one `SceneTree` script, [`tests/test_main.gd`](tests/test_main.gd), which aggregates to a single summary and exit code.
+
 ```powershell
-# PowerShell
-$env:PYTHONPATH = "src"; python -m wiz_drive.wiz_drive_main assets/maps/liveTestOne.dngn
+godot_console --headless --path . --script res://tests/test_main.gd
 ```
 
-The VS Code launch config **"WizDrive: Run (liveTestOne)"** in
-[`.vscode/launch.json`](.vscode/launch.json) does this for you.
-
-### Visualizer Modes
-
-The active visualizer is controlled by the `VISUALIZER` constant at the top of
-[`wiz_drive_main.py`](src/wiz_drive/wiz_drive_main.py):
-
-| Value | Mode | Notes |
-|-------|------|-------|
-| `0` | Pygame top-down (default) | Real-time, requires a display (WASD + Q) |
-| `1` | Text/terminal | Real-time keypresses via `msvcrt` (Windows only) |
-
-### Pygame mode (VISUALIZER = 0, default)
-```bash
-PYTHONPATH=src python -m wiz_drive.wiz_drive_main assets/maps/liveTestOne.dngn
-# Controls: W forward, S backward, A turn left, D turn right, Q quit
-```
-
-### Text mode (VISUALIZER = 1)
-```bash
-PYTHONPATH=src python -m wiz_drive.wiz_drive_main assets/maps/liveTestOne.dngn
-# Real-time keypresses (Windows-only msvcrt): W/S/A/D to move, Q to quit
-```
-
-### Text visualizer (standalone, read-only)
-```bash
-PYTHONPATH=src python -m wiz_drive.text_visualizer assets/maps/liveTestOne.dngn
-```
-
-### Map loader (standalone, for inspection/debugging)
-```bash
-PYTHONPATH=src python -m wiz_drive.map_loader assets/maps/liveTestOne.dngn
-```
-
----
-
-## Dungeon File Format (`.dngn`)
-
-```
-<Dungeon Name>
-<N>              ← number of floors declared
-
-<floor 1 block>
-
-<floor 2 block>
-...
-```
-
-Each floor block (separated from others by blank lines):
-```
-<S>              ← grid size; map is S×S
-<row 0>          ← top row as displayed; space-separated 0/1 tokens (0=open, 1=wall)
-...
-<row S-1>        ← bottom row as displayed
-<px> <py>        ← player start coordinates
-<facing>         ← N/E/S/W or north/east/south/west (case-insensitive)
-[ENEMY|name|px py]                         ← uses stats from ENEMY_TYPES library
-[ENEMY|name|hp|attack|speed|px py]         ← explicit stats
-[ITEM|name|px py]                          ← uses value/description/category/effect from ITEM_TYPES library
-[ITEM|name|value|description|px py]        ← explicit value/description (category/effect still from library by name)
-[STAIRS|px py]
-```
-
-Object descriptor lines are optional and can appear in any order after the facing line. Every x/y coordinate must be within bounds and on an open tile (`0`).
-
-XP for explicit-stat enemies is always looked up from `ENEMY_TYPES` (xp is not part of the map format).
-
-### Coordinate Convention
-
-- **File order**: rows are written top-to-bottom (row 0 = top of the visual map).
-- **Internal grid**: rows are reversed on load so `grid[y][x]` with `y=0` at the *bottom* (standard math orientation).
-- **Directions**: north=(0,+1), south=(0,-1), east=(+1,0), west=(-1,0).
-- The pygame visualizer's `_to_screen` inverts y again so north renders upward on screen.
-
----
-
-## Architecture
-
-### Data Flow
-
-```
-.dngn file
-    │
-    ▼
-map_loader.load_map_file()
-    │  returns (name, numFloors, [FloorData, ...])
-    │
-    ▼
-FloorData = (grid, playerPos, facing, enemies, items, stairs)
-    │
-    ├─▶ Player object  (player.py)
-    │
-    ├─▶ GameState  (game_state.py)   movement / combat / floor dispatch via apply_key()
-    │
-    └─▶ Visualizer
-           ├── MapVisualizer.draw()      (pygame)
-           └── render_floor()            (text/ASCII)
-```
-
-### `FloorData` type alias (`map_loader.py`)
-```python
-FloorData = tuple[
-    List[List[int]],          # grid[y][x]: 0=open, 1=wall
-    Tuple[int, int],          # player start (x, y)
-    str,                      # facing: "north"|"east"|"south"|"west"
-    List[Enemy],
-    List[Item],
-    Tuple[int, int] | None,   # stairs position, or None
-]
-```
-
-### `map_loader.py` Public API
-
-| Function | Purpose |
-|----------|---------|
-| `load_map_file(path)` | Load from a `.dngn` file on disk |
-| `load_map_text(text)` | Load from a string (same format) |
-| `validate_map_file(path)` | Returns `(is_valid, [errors])` without loading for use |
-
-Set `map_loader.debug = False` (as done in all entry-point files) to suppress verbose `[DEBUG]` output.
-
----
-
-## Combat
-
-When the player moves (`w`/`s`) into a tile occupied by an enemy, `GameState._do_combat()` triggers.
-
-### Strike mechanic (`Player.strike(enemy)`)
-- Hit roll: `random.random() < self.attack` (default 50% chance)
-- On hit: damage = `self.strength + self.weapon.strength` (weapon is `None` stub, treated as 0)
-- On miss: no damage dealt
-- Either way, the enemy counter-attacks: `max(1, enemy.attack - self.defense)` damage to player
-- Returns `True` on kill
-
-## Floor Transitions
-
-Also handled in `GameState.apply_key()`: stepping onto a `STAIRS` tile (after a successful move) advances `floor_index` and resets the player to the new floor's start position and facing. If no next floor exists, a message is printed.
+**Use `godot_console.exe`, not `godot.exe`.** The plain `godot` on PATH is the GUI build; run headless from PowerShell it detaches from the console, so the run appears to hang and no exit code comes back. `godot_console.exe` (a thin console launcher next to it in `C:\Godot`) blocks until done, streams stdout, and returns a real exit code — which the suite's `quit(1 if failed else 0)` gating depends on.
 
 ---
 
 ## Coding Conventions
 
-- **Python 3.11+**, no virtual-environment setup checked in; runtime external dependencies must be declared in `pyproject.toml` under `[project.dependencies]` (test-only dependencies such as `pytest` go in the `dev` optional-dependency group and are exempt).
-- **Type hints** used throughout. Use `from __future__ import annotations` for forward references.
-- **Error messages** use `!r` (repr) formatting for untrusted/user-supplied values.
-- **`map_loader.debug`** is a module-level bool. Set it to `False` in every entry-point file before calling any loader function. Never leave it `True` in committed code that runs as part of the game.
-- `Enemy` and `Item` call `pygame.Surface(...)` in `__init__`, so `pygame.init()` **must** be called before any map is loaded.
-- `FloorData` tuples are positional; always unpack with named variables: `grid, start_pos, start_facing, enemies, items, stairs = floor`.
+- **Static typing throughout**: annotate variables, parameters, and return types (`func size() -> int:`, `var walls: Array[Vector2i] = []`).
+- **Naming**: `snake_case` for functions and variables, `PascalCase` for `class_name`, `UPPER_SNAKE_CASE` for constants.
+- **Comments**: `##` doc comments for a class or member; `#` for inline notes inside a body. Comment on intent, not the obvious.
+- Data classes derive from `Resource`; stateless helpers are `static func`s on a `RefCounted` class.
 
 ---
 
-## Testing
+## Next
 
-Run the full test suite with:
-```bash
-python -m pytest tests/ -v
-```
-
-Manual testing (run from the repo root with `src` on the path):
-```bash
-# Validate a dungeon file:
-PYTHONPATH=src python -m wiz_drive.map_loader assets/maps/DebugMapLoader.dngn
-
-# Render a dungeon as ASCII:
-PYTHONPATH=src python -m wiz_drive.text_visualizer assets/maps/liveTestOne.dngn
-
-# Open the pygame debug viewer (requires a display):
-PYTHONPATH=src python -m wiz_drive.test_visualizer assets/maps/liveTestOne.dngn
-```
-
-When adding new `.dngn` parser features, test both `load_map_file` and `validate_map_file` paths, and exercise `load_map_text` for in-memory cases.
-
----
-
-## Next Priorities (from [docs/SECOND_ROADMAP.md](docs/SECOND_ROADMAP.md))
-
-1. Stairs/portals for level transitions *(partially implemented)*
-2. Movement collision validation surfaced in all visualizers
-3. Basic 3D perspective / first-person wall rendering (the core Wizardry feel)
-4. Wall textures and UI overlay (HUD)
+Map generation — a generator that outputs a `FloorData`, using `dijkstra_map_4` as the connectivity check (flood from the entrance, reject layouts with unreachable open tiles). Open design question to settle first: **procedural vs. hand-authored** maps (a traditional roguelike leans procedural).
