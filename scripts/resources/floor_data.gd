@@ -5,16 +5,23 @@ extends Resource
 
 func wall_tiles() -> Array[Vector2i]:
     var walls : Array[Vector2i] = []
-    for y in range(size()):
-        for x in range(size()):
-            if is_wall(x, y):
+    for x in range(size()[0]):
+        for y in range(size()[1]):
+            if is_wall(Vector2i(x, y)):
                 walls.append(Vector2i(x, y))
     return walls
 
-func size() -> int:
-    return grid.size()
+func tile_at(grid_pos : Vector2i) -> int:
+    return grid[grid_pos[1]][grid_pos[0]]
 
-func is_wall(x : int, y : int) -> bool:
-    if x < 0 or y < 0 or x >= size() or y >= size():
+func size() -> Vector2i:
+    if grid.is_empty():
+        return Vector2i.ZERO
+    return Vector2i(grid[0].size(), grid.size())
+
+func is_wall(grid_pos : Vector2i) -> bool:
+    var x : int = grid_pos[0]
+    var y : int = grid_pos[1]
+    if x < 0 or y < 0 or x >= size().x or y >= size().y:
         return true
-    return grid[y][x] == 1
+    return tile_at(grid_pos) == 1

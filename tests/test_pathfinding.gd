@@ -3,7 +3,7 @@ extends RefCounted
 
 func run(t : TestContext) -> void:
     # build test, call, print/assert
-    var size : int = 5
+    var size : Vector2i = Vector2i(5, 5)
     var start : Vector2i = Vector2i(0, 0)
     var blocked: Array[Vector2i] = [
             Vector2i(2, 0), Vector2i(2, 1), Vector2i(2, 2), Vector2i(2, 3),  # wall, gap at y=4

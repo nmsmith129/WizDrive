@@ -5,7 +5,7 @@ extends RefCounted
 ## and walkable tiles.
 
 
-static func dijkstra_map_4(start : Vector2i, blocked : Array[Vector2i], size : int) -> Dictionary[Vector2i, int]:
+static func dijkstra_map_4(start : Vector2i, blocked : Array[Vector2i], size : Vector2i) -> Dictionary[Vector2i, int]:
     var open_set : Array[Vector2i] = [start]
     var score : Dictionary[Vector2i, int] = {start: 0}
 
@@ -14,9 +14,9 @@ static func dijkstra_map_4(start : Vector2i, blocked : Array[Vector2i], size : i
         var tentative_score = score[current] + 1
         for direction in GameConstants.FOURWAY:
             var neighbor : Vector2i = current + direction
-            if neighbor.x < 0 or neighbor.x >= size:
+            if neighbor.x < 0 or neighbor.x >= size.x:
                 continue
-            if neighbor.y < 0 or neighbor.y >= size:
+            if neighbor.y < 0 or neighbor.y >= size.y:
                 continue
             if neighbor in blocked or neighbor in score and score[neighbor] <= tentative_score:
                 continue
@@ -24,7 +24,7 @@ static func dijkstra_map_4(start : Vector2i, blocked : Array[Vector2i], size : i
             open_set.append(neighbor)
     return score
 
-static func dijkstra_map_8(start: Vector2i, blocked: Array[Vector2i], size : int) -> Dictionary[Vector2i, int]:
+static func dijkstra_map_8(start: Vector2i, blocked: Array[Vector2i], size : Vector2i) -> Dictionary[Vector2i, int]:
     var open_set: Array[Vector2i] = [start]
     var score: Dictionary[Vector2i, int] = {start: 0}
 
@@ -33,9 +33,9 @@ static func dijkstra_map_8(start: Vector2i, blocked: Array[Vector2i], size : int
         var tentative_score = score[current] + 1
         for direction in GameConstants.EIGHTWAY:
             var neighbor : Vector2i = current + direction
-            if neighbor.x < 0 or neighbor.x >= size:
+            if neighbor.x < 0 or neighbor.x >= size.x:
                 continue
-            if neighbor.y < 0 or neighbor.y >= size:
+            if neighbor.y < 0 or neighbor.y >= size.y:
                 continue
             if neighbor in blocked or neighbor in score and score[neighbor] <= tentative_score:
                 continue
