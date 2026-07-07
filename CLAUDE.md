@@ -1,9 +1,3 @@
-<!-- SPECKIT START -->
-For additional context about technologies to be used, project structure,
-shell commands, and other important information, read the current plan
-at specs/001-persistence-schema-versioning/plan.md
-<!-- SPECKIT END -->
-
 # WizDrive — CLAUDE.md
 
 WizDrive is a **traditional ASCII roguelike** in the lineage of the 1980s classics (Rogue, NetHack, Angband) and modern-classic **Brogue** — turn-based, grid-based, procedurally generated. It is built in **Godot 4.7 / GDScript** and targets **Android, Linux, and Windows 11**.
