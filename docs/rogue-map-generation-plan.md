@@ -1,5 +1,39 @@
 # Rogue Map Generation Plan
 
+## Summary of the original Rogue algorithm
+
+For reference, this is how the 1980 *Rogue* actually builds a level (`rooms.c` +
+`passages.c`). WizDrive's plan below adapts it; this section is the source material.
+
+1. **Nine sectors.** The dungeon area is divided into a fixed **3×3 grid of nine sectors**.
+   Each sector will hold at most one room, so rooms can never overlap.
+2. **One room per sector (`do_rooms`).** For each sector, pick a random room width and
+   height and a random position *within* the sector so the room fits with a margin from the
+   sector edges. Rooms carry flags: `ISDARK` (unlit — more likely the deeper you go) and
+   occasionally `ISGONE`.
+3. **"Gone" rooms.** With some probability — provided a minimum number of real rooms
+   survive — a room is marked *gone*: not drawn as a room at all, just a single point in its
+   sector used as a bend/junction that passages can route through. This is what produces
+   Rogue's stretches of bare corridor with no room.
+4. **Room contents.** A real room gets a floor of `.` inside a wall ring (`-` and `|`), and
+   may be seeded with gold, a monster, and traps (all level-dependent).
+5. **Passages (`do_passages`).** Treat the nine rooms as nodes in a graph whose edges join
+   **grid-adjacent** sectors (horizontal or vertical neighbours only). Connect them in two
+   phases:
+   - **Spanning tree for connectivity.** Start from a random room marked "in the graph."
+     Repeatedly pick a room already in the graph that has a neighbour not yet in the graph,
+     carve a passage to that neighbour, and add it. Continue until all nine rooms are
+     connected — this guarantees the whole level is reachable.
+   - **Extra edges for loops.** Add a few (`rnd(5)`) more random passages between adjacent
+     rooms so the dungeon isn't a pure tree.
+6. **Carving one passage (`conn`).** To join two adjacent rooms, pick a door position on
+   each facing wall, place the doors, and dig an **L-/Z-shaped corridor** between them: a
+   straight run with a single perpendicular jog at a random midpoint. For a *gone* room the
+   "door" is just a passage tile at its stored point.
+7. **Finishing touches.** Place the stairs, and scatter remaining gold, monsters, and traps.
+
+---
+
 A working plan for WizDrive's **first** map generator, recreating the algorithm from the
 original *Rogue* (`rooms.c`). Chosen over the SPD method (see
 [SPD-map-generation-plan.md](SPD-map-generation-plan.md)) because it is markedly simpler to

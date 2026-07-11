@@ -1,5 +1,47 @@
 # Map Generation Plan
 
+## Summary of the Shattered Pixel Dungeon algorithm
+
+For reference, this is how *Shattered Pixel Dungeon* actually builds a level (`Level`,
+`RegularLevel`, the `Builder` classes, and the `Painter`s). Its defining trait is a clean
+split between **layout** (an abstract graph of rooms and doors) and **painting** (turning
+that graph into tiles). WizDrive's plan below adopts that split; this section is the source
+material. (The "Guiding idea" section further down frames how we borrow from it.)
+
+1. **Rooms are first-class objects.** A level is assembled from `Room` objects, each with a
+   *type* and its own behaviour, and each declaring a min/max size. Broad categories:
+   **entrance** and **exit**, **standard** rooms (fill the level), **special** rooms (shops,
+   treasuries, vaults, gardens… — depth-gated and quota-limited), **secret** rooms, and
+   **connection** rooms (tunnels/junctions).
+2. **Choose the room set (`initRooms`).** Pick one entrance and one exit, a depth-scaled
+   number of standard rooms, a limited number of special/secret rooms, and some connection
+   rooms — before any geometry is decided.
+3. **A `Builder` arranges rooms into a connected graph.** `RegularLevel` uses
+   **`LoopBuilder`**:
+   - Place the entrance, then lay a subset of standard rooms in a **large loop/ring** around
+     it, spacing them by angle so the loop closes back on itself.
+   - Hang the remaining rooms (specials, extra standards) off the loop as **branches**.
+   - Rooms attach **edge-to-edge (accretion)**: each new room is placed adjacent to an
+     already-placed room, negotiating a shared edge and door position (`Room.connect`). If a
+     room can't be placed without overlapping, the build **fails and retries**; after enough
+     failures the whole level regenerates.
+   - **Connectivity is guaranteed by construction** — a room only enters the graph by being
+     connected to a room already in it. No flood-fill rejection needed for basic reachability.
+4. **Doors record connections.** Each pair of adjacent, connected rooms gets a door of some
+   kind (regular, locked, hidden/secret, barricade, empty). Connection/tunnel rooms bridge
+   rooms that should link but sit too far apart.
+5. **`Painter`s rasterize the graph (`RegularPainter`).** Only now does anything become
+   tiles. The painter computes the bounding box, fills the map with wall/chasm, then calls
+   **each room's own `paint()`** to stamp its floor, walls, water, grass, and traps —
+   different room types paint differently. Doors are then painted between connected rooms.
+6. **Organic detail + decoration.** Water and grass are laid down in blobs from a
+   per-level noise/cellular pattern; traps, plants, and decorations are scattered.
+7. **Populate and validate.** Place mobs and items, then verify the level is sound
+   (e.g. entrance→exit reachable). If validation fails, discard and regenerate the whole
+   level.
+
+---
+
 A working plan for WizDrive's first map generator. The **architecture target** is
 Shattered Pixel Dungeon's *layout-then-paint* pipeline; the **first build** starts with
 the simplest layout so we learn one new thing at a time.
