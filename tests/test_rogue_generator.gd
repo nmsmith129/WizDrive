@@ -6,6 +6,7 @@ var rooms := RogueGenerator.build_rooms(sectors, RogueGenerator.rng)
 var floor_data := RogueGenerator.build_floor_data(rooms)
 var adjacency := RogueGenerator.build_adjacency(sectors)
 var tree := RogueGenerator.build_tree(adjacency, RogueGenerator.rng)
+var loop_tree := RogueGenerator.build_loop_tree(tree, adjacency, RogueGenerator.rng)
 
 func run(t : TestContext) -> void:
     t.check("RogueGenerator: there are 9 sectors", sectors.size() == 9)
@@ -24,6 +25,7 @@ func run(t : TestContext) -> void:
 
     t.check("RogueGenerator: there are eight edges in tree", tree.size() == 8)
     t.check("RogueGenerator: tree connects all sectors", tree_sector_check())
+    t.check("RogueGenerator: loop tree and connecting tree do not share edges", loop_tree_check())
 
 
 func overlap_check() -> bool:
@@ -72,5 +74,12 @@ func tree_sector_check() -> bool:
         seen.append(edge[1])
     for sector in sectors:
         if !seen.has(sector):
+            return false
+    return true
+
+func loop_tree_check() -> bool:
+    for node in tree:
+        var inverse := [node[1], node[0]]
+        if loop_tree.has(node) or loop_tree.has(inverse):
             return false
     return true
