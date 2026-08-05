@@ -1,12 +1,15 @@
 class_name TestRogueGenerator
 extends RefCounted
 
+var random := RogueGenerator._make_rng(12345)
 var sectors := RogueGenerator.build_sectors()
-var rooms := RogueGenerator.build_rooms(sectors, RogueGenerator.rng)
+var rooms := RogueGenerator.build_rooms(sectors, random)
 var floor_data := RogueGenerator.build_floor_data(rooms)
 var adjacency := RogueGenerator.build_adjacency(sectors)
-var tree := RogueGenerator.build_tree(adjacency, RogueGenerator.rng)
-var loop_tree := RogueGenerator.build_loop_tree(tree, adjacency, RogueGenerator.rng)
+var tree := RogueGenerator.build_tree(adjacency, random)
+var loop_tree := RogueGenerator.build_loop_tree(tree, adjacency, random)
+var g := RogueGenerator.generate(random)
+
 
 func run(t : TestContext) -> void:
     RogueGenerator.carve_corridors(floor_data, tree, loop_tree, rooms)
@@ -28,7 +31,8 @@ func run(t : TestContext) -> void:
     t.check("RogueGenerator: there are eight edges in tree", tree.size() == 8)
     t.check("RogueGenerator: tree connects all sectors", tree_sector_check())
     t.check("RogueGenerator: loop tree and connecting tree do not share edges", loop_tree_check())
-    t.check("RogueGenerator: map is fully connected", connectivity_check())
+    t.check("RogueGenerator: test map is fully connected", connectivity_check())
+    t.check("RogueGenerator: generates maps that are fully connected", generate_check())
 
 func overlap_check() -> bool:
     var values := sectors.values()
@@ -93,4 +97,19 @@ func connectivity_check() -> bool:
     var tiles := floor_data.wall_tiles()
     var flood_count : int = Pathfinding.dijkstra_map_4(start, tiles, RogueGenerator.MAP_SIZE).size()
     var floor_count : int = map_x * map_y - tiles.size()
+    return flood_count == floor_count
+
+func _first_floor_tile(fd : FloorData) -> Vector2i:
+    var size := fd.size()
+    for y in range(size.y):
+        for x in range(size.x):
+            if not fd.is_wall(Vector2i(x, y)):
+                return Vector2i(x,y)
+    return Vector2i(-1, -1)    # no floor at all - shouldn't happen
+
+func generate_check() -> bool:
+    var tiles := g.wall_tiles()
+    var start := _first_floor_tile(g)
+    var flood_count : int = Pathfinding.dijkstra_map_4(start, tiles, RogueGenerator.MAP_SIZE).size()
+    var floor_count : int = RogueGenerator.MAP_SIZE.x * RogueGenerator.MAP_SIZE.y - tiles.size()
     return flood_count == floor_count

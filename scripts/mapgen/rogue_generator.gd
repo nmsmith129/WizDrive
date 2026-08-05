@@ -6,8 +6,6 @@ const GRID : int = 3
 const SECTOR_SIZE : Vector2i = MAP_SIZE / GRID
 const ROOM_MIN : int = 4
 
-static var rng : RandomNumberGenerator = _make_rng(12345)
-
 ## Creates a RandomNumberGenerator with an explicit seed, so maps are reproducible.
 ## r_seed: the seed value; the same seed always regenerates the same dungeon.
 static func _make_rng(r_seed : int) -> RandomNumberGenerator:
@@ -178,3 +176,13 @@ static func carve_corridors(floor_data : FloorData, tree : Array, loop_tree : Ar
     for edge in edges:
         _carve_corridor(floor_data, rooms[edge[0]], rooms[edge[1]])
     return
+
+static func generate(randgen : RandomNumberGenerator) -> FloorData:
+    var sectors := build_sectors()
+    var rooms := build_rooms(sectors, randgen)
+    var floor_data := build_floor_data(rooms)
+    var adjacency := build_adjacency(sectors)
+    var tree := build_tree(adjacency, randgen)
+    var loop_tree := build_loop_tree(tree, adjacency, randgen)
+    carve_corridors(floor_data, tree, loop_tree, rooms)
+    return floor_data
