@@ -9,6 +9,8 @@ var tree := RogueGenerator.build_tree(adjacency, RogueGenerator.rng)
 var loop_tree := RogueGenerator.build_loop_tree(tree, adjacency, RogueGenerator.rng)
 
 func run(t : TestContext) -> void:
+    RogueGenerator.carve_corridors(floor_data, tree, loop_tree, rooms)
+
     t.check("RogueGenerator: there are 9 sectors", sectors.size() == 9)
     t.check("RogueGenerator: sectors[Vector2i(0, 0)] is Rect2i(0, 0, 15, 15)", sectors[Vector2i(0, 0)] == Rect2i(0, 0, 15, 15))
     t.check("RogueGenerator: sectors[Vector2i(2, 2)] is Rect2i(30, 30, 15, 15)", sectors[Vector2i(2, 2)] == Rect2i(30, 30, 15, 15))
@@ -26,7 +28,7 @@ func run(t : TestContext) -> void:
     t.check("RogueGenerator: there are eight edges in tree", tree.size() == 8)
     t.check("RogueGenerator: tree connects all sectors", tree_sector_check())
     t.check("RogueGenerator: loop tree and connecting tree do not share edges", loop_tree_check())
-
+    t.check("RogueGenerator: map is fully connected", connectivity_check())
 
 func overlap_check() -> bool:
     var values := sectors.values()
@@ -83,3 +85,12 @@ func loop_tree_check() -> bool:
         if loop_tree.has(node) or loop_tree.has(inverse):
             return false
     return true
+
+func connectivity_check() -> bool:
+    var map_x : int = RogueGenerator.MAP_SIZE.x
+    var map_y : int = RogueGenerator.MAP_SIZE.y
+    var start : Vector2i = rooms.values()[0].rect.get_center()
+    var tiles := floor_data.wall_tiles()
+    var flood_count : int = Pathfinding.dijkstra_map_4(start, tiles, RogueGenerator.MAP_SIZE).size()
+    var floor_count : int = map_x * map_y - tiles.size()
+    return flood_count == floor_count

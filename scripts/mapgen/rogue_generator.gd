@@ -139,3 +139,42 @@ static func build_loop_tree(tree : Array, adjacency : Dictionary[Vector2i, Array
         return_array.append(loop_edge)
         extra_edges.erase(loop_edge)
     return return_array
+
+## Carves a straight run of floor between two points that share a row or column. The one
+## double loop handles either axis: whichever coordinate p and q share collapses its range
+## to a single value, so a fixed-x pair carves a vertical line and a fixed-y pair a horizontal
+## one. Mutates the grid in place.
+## floor_data: the FloorData to carve into (a Resource, so changes are visible to the caller).
+## p, q: the segment endpoints; must be axis-aligned (equal x or equal y).
+static func _carve_line(floor_data : FloorData, p : Vector2i, q : Vector2i) -> void:
+    for x in range(min(p.x, q.x), max(p.x, q.x) + 1):
+        for y in range(min(p.y, q.y), max(p.y, q.y) + 1):
+            floor_data.grid[y][x] = 0
+    return
+
+## Carves an L-shaped corridor connecting two rooms' centres: one horizontal leg to the elbow,
+## then one vertical leg to the far centre. The legs inside a room are already floor (harmless),
+## so the corridor only really cuts through the wall ring and the gap between rooms - the
+## opening it punches through the ring is the "door" until a distinct door tile type exists.
+## floor_data: the FloorData to carve into.
+## a, b: the two rooms to connect; order does not matter.
+static func _carve_corridor(floor_data : FloorData, a : Room, b : Room) -> void:
+    var ca : Vector2i = a.rect.get_center()
+    var cb : Vector2i = b.rect.get_center()
+    var elbow : Vector2i = Vector2i(cb.x, ca.y)
+    _carve_line(floor_data, ca, elbow)
+    _carve_line(floor_data, cb, elbow)
+    return
+
+## Carves every corridor into the grid. Tree and loop edges are treated identically - both are
+## just [a, b] sector-coord pairs - so they are concatenated and carved in one pass.
+## floor_data: the FloorData to carve into.
+## tree: the spanning tree's edges, from build_tree().
+## loop_tree: the extra loop edges, from build_loop_tree().
+## rooms: sector coord -> Room, used to look up each edge's endpoints.
+static func carve_corridors(floor_data : FloorData, tree : Array, loop_tree : Array,
+        rooms : Dictionary[Vector2i, Room]) -> void:
+    var edges : Array = tree + loop_tree
+    for edge in edges:
+        _carve_corridor(floor_data, rooms[edge[0]], rooms[edge[1]])
+    return
